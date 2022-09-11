@@ -11,18 +11,15 @@ public class RecipientServiceShould {
         // GIVEN
         String recipientId = "id";
         Name name = new Name(new Name.FirstName("firstName"), new Name.LastName("lastName"));
-        String address = "address";
-        String postalCode = "postalCode";
-        String city = "city";
-        String country = "country";
-        Recipient expectedRecipient = new Recipient(recipientId, name, address, postalCode, city, country);
+        Address address = new Address(new Address.Street("address"), new Address.PostalCode(75019), new Address.City("Paris"), new Address.Country("France"));
+        Recipient expectedRecipient = new Recipient(recipientId, name, address);
 
         InMemoryRecipientRepository recipientRepository = Mockito.spy(new InMemoryRecipientRepository());
         Mockito.doReturn(recipientId).when(recipientRepository).generateRecipientId();
         RecipientService recipientService = new RecipientService(recipientRepository);
 
         // WHEN
-        recipientService.createRecipient(name, address, postalCode, city, country);
+        recipientService.createRecipient(name, address);
 
         // THEN
         StepVerifier.create(recipientRepository.getById(recipientId))

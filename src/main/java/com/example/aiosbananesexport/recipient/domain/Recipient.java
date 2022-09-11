@@ -12,18 +12,12 @@ public class Recipient {
     private final String recipientId;
 
     private final Name name;
-    private final String address;
-    private final String postalCode;
-    private final String city;
-    private final String country;
+    private final Address address;
 
-    public Recipient(String recipientId, Name name, String address, String postalCode, String city, String country) {
+    public Recipient(String recipientId, Name name, Address address) {
         this.recipientId = recipientId;
         this.name = name;
         this.address = address;
-        this.postalCode = postalCode;
-        this.city = city;
-        this.country = country;
     }
 
 }

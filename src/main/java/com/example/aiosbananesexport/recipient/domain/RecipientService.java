@@ -7,7 +7,7 @@ public class RecipientService {
         this.recipientRepository = recipientRepository;
     }
 
-    public void createRecipient(Name name, String address, String postalCode, String city, String country) {
-        recipientRepository.createRecipient(name, address, postalCode, city, country);
+    public void createRecipient(Name name, Address address) {
+        recipientRepository.createRecipient(name, address);
     }
 }
