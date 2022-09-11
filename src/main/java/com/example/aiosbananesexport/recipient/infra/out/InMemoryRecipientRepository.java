@@ -1,5 +1,6 @@
 package com.example.aiosbananesexport.recipient.infra.out;
 
+import com.example.aiosbananesexport.recipient.domain.Name;
 import com.example.aiosbananesexport.recipient.domain.Recipient;
 import com.example.aiosbananesexport.recipient.domain.RecipientRepository;
 import reactor.core.publisher.Mono;
@@ -13,8 +14,8 @@ public class InMemoryRecipientRepository implements RecipientRepository {
     private Map<String, Recipient> recipients = new HashMap<>();
 
     @Override
-    public Recipient createRecipient(String firstName, String lastName, String address, String postalCode, String city, String country) {
-        Recipient recipient = new Recipient(generateRecipientId(), firstName, lastName, address, postalCode, city, country);
+    public Recipient createRecipient(Name name, String address, String postalCode, String city, String country) {
+        Recipient recipient = new Recipient(generateRecipientId(), name, address, postalCode, city, country);
         recipients.put(recipient.getRecipientId(), recipient);
         return recipient;
     }

@@ -10,24 +10,23 @@ public class RecipientServiceShould {
     void create_a_recipient__when_no_existing_user_with_same_attributes() {
         // GIVEN
         String recipientId = "id";
-        String firstName = "firstName";
-        String lastName = "lastName";
+        Name name = new Name(new Name.FirstName("firstName"), new Name.LastName("lastName"));
         String address = "address";
         String postalCode = "postalCode";
         String city = "city";
         String country = "country";
-        Recipient expectedRecipient = new Recipient(recipientId,firstName, lastName, address, postalCode, city, country);
+        Recipient expectedRecipient = new Recipient(recipientId, name, address, postalCode, city, country);
 
         InMemoryRecipientRepository recipientRepository = Mockito.spy(new InMemoryRecipientRepository());
         Mockito.doReturn(recipientId).when(recipientRepository).generateRecipientId();
         RecipientService recipientService = new RecipientService(recipientRepository);
 
         // WHEN
-        recipientService.createRecipient(firstName, lastName, address, postalCode, city, country);
+        recipientService.createRecipient(name, address, postalCode, city, country);
 
         // THEN
         StepVerifier.create(recipientRepository.getById(recipientId))
-                .expectNext(expectedRecipient)
-                .verifyComplete();
+                    .expectNext(expectedRecipient)
+                    .verifyComplete();
     }
 }

@@ -1,5 +1,6 @@
 package com.example.aiosbananesexport.recipient.domain;
 
+import com.example.aiosbananesexport.common.ValueObject;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -9,20 +10,20 @@ import lombok.ToString;
 @ToString
 public class Recipient {
     private final String recipientId;
-    private final String firstName;
-    private final String lastName;
+
+    private final Name name;
     private final String address;
     private final String postalCode;
     private final String city;
     private final String country;
 
-    public Recipient(String recipientId, String firstName, String lastName, String address, String postalCode, String city, String country) {
+    public Recipient(String recipientId, Name name, String address, String postalCode, String city, String country) {
         this.recipientId = recipientId;
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this.name = name;
         this.address = address;
         this.postalCode = postalCode;
         this.city = city;
         this.country = country;
     }
+
 }

@@ -12,5 +12,5 @@ import lombok.experimental.FieldDefaults;
 @ToString
 @EqualsAndHashCode
 abstract public class ValueObject<T> {
-    private T value;
+    private final T value;
 }
