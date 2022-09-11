@@ -39,7 +39,7 @@ public class RecipientServiceShould {
     }
 
     @Test
-    void create_a_recipient__when_no_existing_user_with_same_attributes() {
+    void create_a_recipient__in_nominal_case() {
         // GIVEN
         Recipient expectedRecipient = new Recipient(recipientId, name, address);
 
