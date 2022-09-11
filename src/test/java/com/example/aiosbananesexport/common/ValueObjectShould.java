@@ -34,14 +34,14 @@ class ValueObjectShould {
     }
 
     @EqualsAndHashCode(callSuper = true)
-    public static class ValueObject1 extends ValueObject<String>{
+    public static class ValueObject1 extends ValueObject<String> {
         public ValueObject1(String value) {
             super(value);
         }
     }
 
     @EqualsAndHashCode(callSuper = true)
-    public static class ValueObject2 extends ValueObject<String>{
+    public static class ValueObject2 extends ValueObject<String> {
         public ValueObject2(String value) {
             super(value);
         }

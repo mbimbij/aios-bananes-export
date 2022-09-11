@@ -8,7 +8,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 public class InMemoryRecipientRepository implements RecipientRepository {
@@ -27,6 +26,7 @@ public class InMemoryRecipientRepository implements RecipientRepository {
 
     @Override
     public Mono<Recipient> getById(String recipientId) {
-        return Mono.justOrEmpty(Optional.ofNullable(recipients.get(recipientId)));
+        Recipient recipient = recipients.get(recipientId);
+        return Mono.justOrEmpty(recipient);
     }
 }

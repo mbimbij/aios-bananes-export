@@ -1,6 +1,5 @@
 package com.example.aiosbananesexport.recipient.domain;
 
-import com.example.aiosbananesexport.common.ValueObject;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;

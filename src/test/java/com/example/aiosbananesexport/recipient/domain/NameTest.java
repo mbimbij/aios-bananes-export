@@ -17,10 +17,11 @@ class NameTest {
         Name name1 = new Name(new Name.FirstName(firstName1), new Name.LastName(lastName1));
         Name name2 = new Name(new Name.FirstName(firstName2), new Name.LastName(lastName2));
 
-        if(expectedEqual){
-            assertThat(name1).isEqualTo(name2);
-        }else {
+        if (!expectedEqual) {
             assertThat(name1).isNotEqualTo(name2);
+            return;
         }
+
+        assertThat(name1).isEqualTo(name2);
     }
 }
