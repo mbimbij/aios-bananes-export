@@ -3,6 +3,7 @@ package com.example.aiosbananesexport.order.domain;
 
 import com.example.aiosbananesexport.recipient.domain.Address;
 import com.example.aiosbananesexport.recipient.domain.Name;
+import com.example.aiosbananesexport.recipient.domain.Recipient;
 import com.example.aiosbananesexport.recipient.domain.RecipientRepository;
 import com.example.aiosbananesexport.recipient.exception.RecipientNotFoundException;
 
@@ -24,16 +25,19 @@ public class OrderService {
         Address address = placeOrderCommand.getAddress();
 
         return recipientRepository.getByNameAndAddress(name, address)
-                                  .map(recipient -> {
-                                      Price price = new Price(placeOrderCommand.getQuantity(), pricePerKilogram);
-                                      Order order = this.orderRepository.createOrder(recipient,
-                                                                                     placeOrderCommand.getQuantity(),
-                                                                                     placeOrderCommand.getDeliveryDate(),
-                                                                                     price);
-                                      this.orderRepository.saveOrder(order);
-                                      return order;
-                                  })
+                                  .map(recipient -> this.createOrder(recipient, placeOrderCommand))
                                   .orElseThrow(() -> new RecipientNotFoundException(name, address));
+    }
+
+    private Order createOrder(Recipient recipient, PlaceOrderCommand placeOrderCommand) {
+        Price price = new Price(placeOrderCommand.getQuantity(), pricePerKilogram);
+        Order order = this.orderRepository.createOrder(recipient,
+                                                       placeOrderCommand.getQuantity(),
+                                                       placeOrderCommand.getDeliveryDate(),
+                                                       price);
+        order.validate();
+        this.orderRepository.saveOrder(order);
+        return order;
     }
 
     public Optional<Order> getOrderById(OrderId orderId) {

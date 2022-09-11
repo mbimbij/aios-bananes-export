@@ -3,6 +3,7 @@ package com.example.aiosbananesexport.recipient.domain;
 import com.example.aiosbananesexport.recipient.exception.RecipientAlreadyExistsException;
 import com.example.aiosbananesexport.recipient.exception.RecipientNotFoundException;
 import com.example.aiosbananesexport.recipient.infra.out.InMemoryRecipientRepository;
+import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -56,9 +57,11 @@ public class RecipientServiceShould {
         // GIVEN
         recipientService.createRecipient(name, address);
 
-        // WHEN / THEN
-        assertThatThrownBy(() -> recipientService.createRecipient(name, address))
-                .isInstanceOf(RecipientAlreadyExistsException.class);
+        // WHEN
+        ThrowableAssert.ThrowingCallable throwingCallable = () -> recipientService.createRecipient(name, address);
+
+        // THEN
+        assertThatThrownBy(throwingCallable).isInstanceOf(RecipientAlreadyExistsException.class);
     }
 
     @Test
@@ -85,10 +88,11 @@ public class RecipientServiceShould {
         Name newName = new Name(new Name.FirstName("newFirstName"),
                                 new Name.LastName("lastName"));
 
-        Recipient expectedRecipient = new Recipient(recipientId, newName, address);
+        // WHEN
+        ThrowableAssert.ThrowingCallable throwingCallable = () -> recipientService.renameRecipient(new RecipientId("nonExistingId"), newName);
 
-        // WHEN / THEN
-        assertThatThrownBy(() -> recipientService.renameRecipient(new RecipientId("nonExistingId"), newName))
+        // THEN
+        assertThatThrownBy(throwingCallable)
                 .isInstanceOf(RecipientNotFoundException.class);
     }
 
@@ -110,8 +114,11 @@ public class RecipientServiceShould {
         // GIVEN
         recipientService.createRecipient(name, address);
 
-        // WHEN / THEN
-        assertThatThrownBy(() -> recipientService.deleteRecipient(new RecipientId("nonExistingId")))
+        // WHEN
+        ThrowableAssert.ThrowingCallable throwingCallable = () -> recipientService.deleteRecipient(new RecipientId("nonExistingId"));
+
+        // THEN
+        assertThatThrownBy(throwingCallable)
                 .isInstanceOf(RecipientNotFoundException.class);
     }
 }
