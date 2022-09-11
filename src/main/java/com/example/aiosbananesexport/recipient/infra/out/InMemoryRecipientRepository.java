@@ -9,7 +9,11 @@ public class InMemoryRecipientRepository implements RecipientRepository {
 
     @Override
     public Recipient createRecipient(Name name, Address address) {
-        Recipient recipient = new Recipient(generateRecipientId(), name, address);
+        return new Recipient(generateRecipientId(), name, address);
+    }
+
+    @Override
+    public Recipient saveRecipient(Recipient recipient) {
         recipients.put(recipient.getRecipientId(), recipient);
         return recipient;
     }
@@ -36,5 +40,14 @@ public class InMemoryRecipientRepository implements RecipientRepository {
     public void deleteById(RecipientId recipientId) {
 
         recipients.remove(recipientId);
+    }
+
+    @Override
+    public Optional<Recipient> getByNameAndAddress(Name name, Address address) {
+        return recipients.values()
+                         .stream()
+                         .filter(recipient -> Objects.equals(recipient.getName(), name) &&
+                                              Objects.equals(recipient.getAddress(), address))
+                         .findFirst();
     }
 }

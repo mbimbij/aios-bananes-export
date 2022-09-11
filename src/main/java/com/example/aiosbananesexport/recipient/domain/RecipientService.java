@@ -4,7 +4,7 @@ import com.example.aiosbananesexport.recipient.exception.RecipientAlreadyExistsE
 import com.example.aiosbananesexport.recipient.exception.RecipientNotFoundException;
 
 public class RecipientService {
-    private RecipientRepository recipientRepository;
+    private final RecipientRepository recipientRepository;
 
     public RecipientService(RecipientRepository recipientRepository) {
         this.recipientRepository = recipientRepository;
