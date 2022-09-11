@@ -1,17 +1,15 @@
 package com.example.aiosbananesexport.recipient.infra.out;
 
-import com.example.aiosbananesexport.recipient.domain.Address;
-import com.example.aiosbananesexport.recipient.domain.Name;
-import com.example.aiosbananesexport.recipient.domain.Recipient;
-import com.example.aiosbananesexport.recipient.domain.RecipientRepository;
+import com.example.aiosbananesexport.recipient.domain.*;
 import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 public class InMemoryRecipientRepository implements RecipientRepository {
-    private Map<String, Recipient> recipients = new HashMap<>();
+    private Map<RecipientId, Recipient> recipients = new HashMap<>();
 
     @Override
     public Recipient createRecipient(Name name, Address address) {
@@ -20,12 +18,20 @@ public class InMemoryRecipientRepository implements RecipientRepository {
         return recipient;
     }
 
-    public String generateRecipientId() {
-        return UUID.randomUUID().toString();
+    @Override
+    public boolean exists(Name name, Address address) {
+        return recipients.values()
+                         .stream()
+                         .anyMatch(recipient -> Objects.equals(recipient.getName(), name) &&
+                                                Objects.equals(recipient.getAddress(), address));
+    }
+
+    public RecipientId generateRecipientId() {
+        return new RecipientId(UUID.randomUUID().toString());
     }
 
     @Override
-    public Mono<Recipient> getById(String recipientId) {
+    public Mono<Recipient> getById(RecipientId recipientId) {
         Recipient recipient = recipients.get(recipientId);
         return Mono.justOrEmpty(recipient);
     }

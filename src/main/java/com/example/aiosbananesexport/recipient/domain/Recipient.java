@@ -8,12 +8,12 @@ import lombok.ToString;
 @Getter
 @ToString
 public class Recipient {
-    private final String recipientId;
+    private final RecipientId recipientId;
 
     private final Name name;
     private final Address address;
 
-    public Recipient(String recipientId, Name name, Address address) {
+    public Recipient(RecipientId recipientId, Name name, Address address) {
         this.recipientId = recipientId;
         this.name = name;
         this.address = address;

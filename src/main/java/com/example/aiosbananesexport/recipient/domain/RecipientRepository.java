@@ -5,5 +5,7 @@ import reactor.core.publisher.Mono;
 public interface RecipientRepository {
     Recipient createRecipient(Name name, Address address);
 
-    Mono<Recipient> getById(String recipientId);
+    boolean exists(Name name, Address address);
+
+    Mono<Recipient> getById(RecipientId recipientId);
 }
