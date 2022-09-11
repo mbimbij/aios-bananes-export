@@ -1,6 +1,7 @@
 package com.example.aiosbananesexport.recipient.domain;
 
 import com.example.aiosbananesexport.recipient.exception.RecipientAlreadyExistsException;
+import com.example.aiosbananesexport.recipient.exception.RecipientNotFoundException;
 
 public class RecipientService {
     private RecipientRepository recipientRepository;
@@ -18,6 +19,9 @@ public class RecipientService {
 
     public void renameRecipient(RecipientId recipientId, Name newName) {
         recipientRepository.getById(recipientId)
-                           .ifPresent(recipient -> recipient.rename(newName));
+                           .ifPresentOrElse(recipient -> recipient.rename(newName),
+                                            () -> {
+                                                throw new RecipientNotFoundException(recipientId);
+                                            });
     }
 }

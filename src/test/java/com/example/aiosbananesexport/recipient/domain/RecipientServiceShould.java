@@ -1,6 +1,7 @@
 package com.example.aiosbananesexport.recipient.domain;
 
 import com.example.aiosbananesexport.recipient.exception.RecipientAlreadyExistsException;
+import com.example.aiosbananesexport.recipient.exception.RecipientNotFoundException;
 import com.example.aiosbananesexport.recipient.infra.out.InMemoryRecipientRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,7 +54,7 @@ public class RecipientServiceShould {
     @Test
     void throw_an_exception__when_trying_to_create_a_recipient__but_user_exists_with_same_attributes() {
         // GIVEN
-        Recipient createRecipientMono = recipientService.createRecipient(name, address);
+        recipientService.createRecipient(name, address);
 
         // WHEN / THEN
         assertThatThrownBy(() -> recipientService.createRecipient(name, address))
@@ -75,5 +76,19 @@ public class RecipientServiceShould {
         // THEN
         Optional<Recipient> actualRecipient = recipientRepository.getById(recipientId);
         assertThat(actualRecipient).hasValue(expectedRecipient);
+    }
+
+    @Test
+    void throw_an_exception__when_renaming_a_non_existing_recipient() {
+        // GIVEN
+        recipientService.createRecipient(name, address);
+        Name newName = new Name(new Name.FirstName("newFirstName"),
+                                new Name.LastName("lastName"));
+
+        Recipient expectedRecipient = new Recipient(recipientId, newName, address);
+
+        // WHEN / THEN
+        assertThatThrownBy(() -> recipientService.renameRecipient(new RecipientId("nonExistingId"), newName))
+                .isInstanceOf(RecipientNotFoundException.class);
     }
 }
