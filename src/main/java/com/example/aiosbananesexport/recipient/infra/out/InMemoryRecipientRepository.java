@@ -31,4 +31,10 @@ public class InMemoryRecipientRepository implements RecipientRepository {
         Recipient recipient = recipients.get(recipientId);
         return Optional.ofNullable(recipient);
     }
+
+    @Override
+    public void deleteById(RecipientId recipientId) {
+
+        recipients.remove(recipientId);
+    }
 }

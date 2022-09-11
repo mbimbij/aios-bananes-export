@@ -8,4 +8,6 @@ public interface RecipientRepository {
     boolean exists(Name name, Address address);
 
     Optional<Recipient> getById(RecipientId recipientId);
+
+    void deleteById(RecipientId recipientId);
 }

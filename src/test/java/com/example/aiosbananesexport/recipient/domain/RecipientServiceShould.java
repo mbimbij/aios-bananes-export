@@ -91,4 +91,27 @@ public class RecipientServiceShould {
         assertThatThrownBy(() -> recipientService.renameRecipient(new RecipientId("nonExistingId"), newName))
                 .isInstanceOf(RecipientNotFoundException.class);
     }
+
+    @Test
+    void delete_an_existing_recipient() {
+        // GIVEN
+        recipientService.createRecipient(name, address);
+
+        // WHEN
+        recipientService.deleteRecipient(recipientId);
+
+        // THEN
+        Optional<Recipient> actualRecipient = recipientRepository.getById(recipientId);
+        assertThat(actualRecipient).isEmpty();
+    }
+
+    @Test
+    void throw_an_exception__when_trying_to_delete_a_non_existing_recipient() {
+        // GIVEN
+        recipientService.createRecipient(name, address);
+
+        // WHEN / THEN
+        assertThatThrownBy(() -> recipientService.deleteRecipient(new RecipientId("nonExistingId")))
+                .isInstanceOf(RecipientNotFoundException.class);
+    }
 }

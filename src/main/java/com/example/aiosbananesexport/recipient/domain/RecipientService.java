@@ -24,4 +24,12 @@ public class RecipientService {
                                                 throw new RecipientNotFoundException(recipientId);
                                             });
     }
+
+    public void deleteRecipient(RecipientId recipientId) {
+        recipientRepository.getById(recipientId)
+                           .ifPresentOrElse(recipient -> recipientRepository.deleteById(recipientId),
+                                            () -> {
+                                                throw new RecipientNotFoundException(recipientId);
+                                            });
+    }
 }
