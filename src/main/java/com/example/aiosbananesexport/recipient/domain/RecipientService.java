@@ -9,10 +9,15 @@ public class RecipientService {
         this.recipientRepository = recipientRepository;
     }
 
-    public void createRecipient(Name name, Address address) {
+    public Recipient createRecipient(Name name, Address address) {
         if (recipientRepository.exists(name, address)) {
             throw new RecipientAlreadyExistsException(name, address);
         }
-        recipientRepository.createRecipient(name, address);
+        return recipientRepository.createRecipient(name, address);
+    }
+
+    public void renameRecipient(RecipientId recipientId, Name newName) {
+        recipientRepository.getById(recipientId)
+                           .ifPresent(recipient -> recipient.rename(newName));
     }
 }

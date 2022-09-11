@@ -2,11 +2,14 @@ package com.example.aiosbananesexport.recipient.domain;
 
 import com.example.aiosbananesexport.recipient.exception.RecipientAlreadyExistsException;
 import com.example.aiosbananesexport.recipient.infra.out.InMemoryRecipientRepository;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import reactor.test.StepVerifier;
+
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class RecipientServiceShould {
 
@@ -19,12 +22,12 @@ public class RecipientServiceShould {
     @BeforeEach
     void setUp() {
         name = new Name(new Name.FirstName("firstName"),
-                             new Name.LastName("lastName"));
+                        new Name.LastName("lastName"));
 
         address = new Address(new Address.Street("address"),
-                                      new Address.PostalCode(75019),
-                                      new Address.City("Paris"),
-                                      new Address.Country("France"));
+                              new Address.PostalCode(75019),
+                              new Address.City("Paris"),
+                              new Address.Country("France"));
 
         recipientRepository = Mockito.spy(new InMemoryRecipientRepository());
         Mockito.doReturn(recipientId)
@@ -43,18 +46,34 @@ public class RecipientServiceShould {
         recipientService.createRecipient(name, address);
 
         // THEN
-        StepVerifier.create(recipientRepository.getById(recipientId))
-                    .expectNext(expectedRecipient)
-                    .verifyComplete();
+        Optional<Recipient> actualRecipient = recipientRepository.getById(recipientId);
+        assertThat(actualRecipient).hasValue(expectedRecipient);
     }
 
     @Test
     void throw_an_exception__when_trying_to_create_a_recipient__but_user_exists_with_same_attributes() {
         // GIVEN
-        recipientService.createRecipient(name, address);
+        Recipient createRecipientMono = recipientService.createRecipient(name, address);
 
-        // WHEN - THEN
-        Assertions.assertThatThrownBy(() -> recipientService.createRecipient(name, address))
-                  .isInstanceOf(RecipientAlreadyExistsException.class);
+        // WHEN / THEN
+        assertThatThrownBy(() -> recipientService.createRecipient(name, address))
+                .isInstanceOf(RecipientAlreadyExistsException.class);
+    }
+
+    @Test
+    void rename_an_existing_recipient() {
+        // GIVEN
+        recipientService.createRecipient(name, address);
+        Name newName = new Name(new Name.FirstName("newFirstName"),
+                                new Name.LastName("lastName"));
+
+        Recipient expectedRecipient = new Recipient(recipientId, newName, address);
+
+        // WHEN
+        recipientService.renameRecipient(recipientId, newName);
+
+        // THEN
+        Optional<Recipient> actualRecipient = recipientRepository.getById(recipientId);
+        assertThat(actualRecipient).hasValue(expectedRecipient);
     }
 }

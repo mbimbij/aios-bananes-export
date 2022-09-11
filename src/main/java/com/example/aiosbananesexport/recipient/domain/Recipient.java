@@ -10,8 +10,8 @@ import lombok.ToString;
 public class Recipient {
     private final RecipientId recipientId;
 
-    private final Name name;
-    private final Address address;
+    private Name name;
+    private Address address;
 
     public Recipient(RecipientId recipientId, Name name, Address address) {
         this.recipientId = recipientId;
@@ -19,4 +19,7 @@ public class Recipient {
         this.address = address;
     }
 
+    public void rename(Name newName) {
+        name = newName;
+    }
 }

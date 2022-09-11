@@ -1,12 +1,8 @@
 package com.example.aiosbananesexport.recipient.infra.out;
 
 import com.example.aiosbananesexport.recipient.domain.*;
-import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public class InMemoryRecipientRepository implements RecipientRepository {
     private Map<RecipientId, Recipient> recipients = new HashMap<>();
@@ -31,8 +27,8 @@ public class InMemoryRecipientRepository implements RecipientRepository {
     }
 
     @Override
-    public Mono<Recipient> getById(RecipientId recipientId) {
+    public Optional<Recipient> getById(RecipientId recipientId) {
         Recipient recipient = recipients.get(recipientId);
-        return Mono.justOrEmpty(recipient);
+        return Optional.ofNullable(recipient);
     }
 }
