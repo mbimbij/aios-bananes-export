@@ -14,7 +14,9 @@ public class RecipientService {
         if (recipientRepository.exists(name, address)) {
             throw new RecipientAlreadyExistsException(name, address);
         }
-        return recipientRepository.createRecipient(name, address);
+        Recipient recipient = recipientRepository.createRecipient(name, address);
+        recipientRepository.saveRecipient(recipient);
+        return recipient;
     }
 
     public void renameRecipient(RecipientId recipientId, Name newName) {
