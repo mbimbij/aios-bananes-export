@@ -2,9 +2,11 @@ package com.example.aiosbananesexport.recipient.domain;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 
 @EqualsAndHashCode
 @Getter
+@ToString
 public class Recipient {
     private final String recipientId;
     private final String firstName;
