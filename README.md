@@ -3,14 +3,10 @@
 Implémentation de l'exerice [BananesExport](https://gitlab.com/aios-sh/BananesExport/-/blob/master/Back/README.md), côté
 backend
 
+Le domaine a été implémenté, mais au 12/09/2022 matin, l'API REST et les tests d'intégration qui vont avec ne l'ont pas été.
+
+Même si ça n'est pas pris en compte, cela sera rajouté dans la soirée du 12/09/2022.
+
 ## Lancer les tests
 
-`mvn clean verify`
-
-## Lancer l'application
-
-1. Avec l'IDE de votre choix: Exécutez la classe `AiosBananesExportApplication`
-2. Avec maven: `mvn spring-boot:run`
-3. Via l'éxécution du jar
-4. Buildez l'application: `mvn clean package`
-5. Exécutez le jar: `java -jar target/aios-bananes-export-0.0.1-SNAPSHOT.jar`
+`mvn clean test`

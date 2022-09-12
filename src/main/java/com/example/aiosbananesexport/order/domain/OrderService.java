@@ -1,7 +1,6 @@
 package com.example.aiosbananesexport.order.domain;
 
 
-import com.example.aiosbananesexport.order.OrderQuantityConfig;
 import com.example.aiosbananesexport.recipient.domain.Address;
 import com.example.aiosbananesexport.recipient.domain.Name;
 import com.example.aiosbananesexport.recipient.domain.Recipient;

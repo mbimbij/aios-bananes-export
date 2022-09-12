@@ -1,0 +1,5 @@
+order:
+  pricePerKilogram: 2.5
+  minOrderQuantityKg: 0
+  maxOrderQuantityKg: 10000
+  incrementOrderQuantityKg: 25

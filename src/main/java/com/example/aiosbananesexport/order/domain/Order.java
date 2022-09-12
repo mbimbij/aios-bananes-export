@@ -3,7 +3,6 @@ package com.example.aiosbananesexport.order.domain;
 import com.example.aiosbananesexport.common.DateFormat;
 import com.example.aiosbananesexport.common.SelfValidating;
 import com.example.aiosbananesexport.common.ValueObject;
-import com.example.aiosbananesexport.order.OrderQuantityConfig;
 import com.example.aiosbananesexport.order.domain.exception.DeliveryDateTooEarlyException;
 import com.example.aiosbananesexport.order.domain.exception.OrderQuantityException;
 import com.example.aiosbananesexport.recipient.domain.Recipient;

@@ -1,4 +1,4 @@
-package com.example.aiosbananesexport.order;
+package com.example.aiosbananesexport.order.domain;
 
 import lombok.Value;
 
