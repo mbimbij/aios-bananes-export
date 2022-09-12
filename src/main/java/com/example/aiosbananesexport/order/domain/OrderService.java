@@ -43,7 +43,6 @@ public class OrderService {
                                                        placeOrderCommand.getQuantity(),
                                                        placeOrderCommand.getDeliveryDate(),
                                                        price);
-        order.validate();
         this.orderRepository.saveOrder(order);
         return order;
     }

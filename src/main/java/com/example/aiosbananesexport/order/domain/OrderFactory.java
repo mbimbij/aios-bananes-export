@@ -15,6 +15,7 @@ public class OrderFactory {
                                 quantity,
                                 deliveryDate,
                                 price);
+        order.validate();
         return order;
     }
 }
