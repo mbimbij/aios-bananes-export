@@ -1,6 +1,7 @@
 package com.example.aiosbananesexport.order.domain;
 
 
+import com.example.aiosbananesexport.order.OrderQuantityConfig;
 import com.example.aiosbananesexport.recipient.domain.Address;
 import com.example.aiosbananesexport.recipient.domain.Name;
 import com.example.aiosbananesexport.recipient.domain.Recipient;
@@ -13,11 +14,13 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final RecipientRepository recipientRepository;
     private final PricePerKilogram pricePerKilogram;
+    private final OrderQuantityConfig orderQuantityConfig;
 
-    public OrderService(OrderRepository orderRepository, RecipientRepository recipientRepository, PricePerKilogram pricePerKilogram) {
+    public OrderService(OrderRepository orderRepository, RecipientRepository recipientRepository, PricePerKilogram pricePerKilogram, OrderQuantityConfig orderQuantityConfig) {
         this.orderRepository = orderRepository;
         this.recipientRepository = recipientRepository;
         this.pricePerKilogram = pricePerKilogram;
+        this.orderQuantityConfig = orderQuantityConfig;
     }
 
     public Order placeOrder(PlaceOrderCommand placeOrderCommand) {

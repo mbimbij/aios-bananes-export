@@ -1,5 +1,6 @@
 package com.example.aiosbananesexport.order.domain;
 
+import com.example.aiosbananesexport.order.OrderQuantityConfig;
 import com.example.aiosbananesexport.recipient.domain.Recipient;
 
 import java.util.Optional;

@@ -1,5 +1,6 @@
 package com.example.aiosbananesexport.order.infra.out;
 
+import com.example.aiosbananesexport.order.OrderQuantityConfig;
 import com.example.aiosbananesexport.order.domain.Order;
 import com.example.aiosbananesexport.order.domain.OrderId;
 import com.example.aiosbananesexport.order.domain.OrderRepository;
