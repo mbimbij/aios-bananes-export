@@ -11,20 +11,6 @@ import java.util.*;
 public class InMemoryOrderRepository implements OrderRepository {
     Map<OrderId, Order> orders = new HashMap<>();
 
-    public OrderId generateOrderId() {
-        return new OrderId(UUID.randomUUID().toString());
-    }
-
-    @Override
-    public Order createOrder(Recipient recipient, Order.Quantity quantity, Order.DeliveryDate deliveryDate, Price price) {
-        Order order = new Order(generateOrderId(),
-                                recipient,
-                                quantity,
-                                deliveryDate,
-                                price);
-        return order;
-    }
-
     @Override
     public void saveOrder(Order order) {
         orders.put(order.getOrderId(), order);

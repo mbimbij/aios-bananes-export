@@ -10,12 +10,18 @@ import com.example.aiosbananesexport.recipient.exception.RecipientNotFoundExcept
 import java.util.Optional;
 
 public class OrderService {
+    private final OrderFactory orderFactory;
     private final OrderRepository orderRepository;
     private final RecipientRepository recipientRepository;
     private final PricePerKilogram pricePerKilogram;
     private final OrderQuantityConfig orderQuantityConfig;
 
-    public OrderService(OrderRepository orderRepository, RecipientRepository recipientRepository, PricePerKilogram pricePerKilogram, OrderQuantityConfig orderQuantityConfig) {
+    public OrderService(OrderFactory orderFactory,
+                        OrderRepository orderRepository,
+                        RecipientRepository recipientRepository,
+                        PricePerKilogram pricePerKilogram,
+                        OrderQuantityConfig orderQuantityConfig) {
+        this.orderFactory = orderFactory;
         this.orderRepository = orderRepository;
         this.recipientRepository = recipientRepository;
         this.pricePerKilogram = pricePerKilogram;
@@ -33,7 +39,7 @@ public class OrderService {
 
     private Order createOrder(Recipient recipient, PlaceOrderCommand placeOrderCommand) {
         Price price = new Price(placeOrderCommand.getQuantity(), pricePerKilogram);
-        Order order = this.orderRepository.createOrder(recipient,
+        Order order = this.orderFactory.createOrder(recipient,
                                                        placeOrderCommand.getQuantity(),
                                                        placeOrderCommand.getDeliveryDate(),
                                                        price);

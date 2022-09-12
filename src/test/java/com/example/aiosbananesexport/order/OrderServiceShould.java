@@ -26,6 +26,7 @@ public class OrderServiceShould {
     private RecipientId recipientId;
     private PricePerKilogram pricePerKilogram;
     private InMemoryOrderRepository orderRepository;
+    private OrderFactory orderFactory;
     private Name name;
     private Address address;
     private Recipient recipient;
@@ -41,9 +42,10 @@ public class OrderServiceShould {
         pricePerKilogram = new PricePerKilogram(2.5);
         orderPlacementDate = LocalDate.now();
 
-        orderRepository = spy(new InMemoryOrderRepository());
+        orderRepository = new InMemoryOrderRepository();
+        orderFactory = spy(new OrderFactory());
         doReturn(orderId)
-                .when(orderRepository)
+                .when(orderFactory)
                 .generateOrderId();
 
         name = new Name(new Name.FirstName("firstName"),
@@ -58,7 +60,7 @@ public class OrderServiceShould {
         recipientRepository.saveRecipient(recipient);
 
         orderQuantityConfig = new OrderQuantityConfig(0, 10_000, 25);
-        orderService = new OrderService(orderRepository, recipientRepository, pricePerKilogram, orderQuantityConfig);
+        orderService = new OrderService(orderFactory, orderRepository, recipientRepository, pricePerKilogram, orderQuantityConfig);
     }
 
     @Test
