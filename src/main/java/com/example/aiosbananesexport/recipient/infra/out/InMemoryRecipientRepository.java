@@ -8,11 +8,6 @@ public class InMemoryRecipientRepository implements RecipientRepository {
     private Map<RecipientId, Recipient> recipients = new HashMap<>();
 
     @Override
-    public Recipient createRecipient(Name name, Address address) {
-        return new Recipient(generateRecipientId(), name, address);
-    }
-
-    @Override
     public Recipient saveRecipient(Recipient recipient) {
         recipients.put(recipient.getRecipientId(), recipient);
         return recipient;
@@ -24,10 +19,6 @@ public class InMemoryRecipientRepository implements RecipientRepository {
                          .stream()
                          .anyMatch(recipient -> Objects.equals(recipient.getName(), name) &&
                                                 Objects.equals(recipient.getAddress(), address));
-    }
-
-    public RecipientId generateRecipientId() {
-        return new RecipientId(UUID.randomUUID().toString());
     }
 
     @Override

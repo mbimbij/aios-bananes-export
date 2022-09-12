@@ -4,9 +4,11 @@ import com.example.aiosbananesexport.recipient.exception.RecipientAlreadyExistsE
 import com.example.aiosbananesexport.recipient.exception.RecipientNotFoundException;
 
 public class RecipientService {
+    private final RecipientFactory recipientFactory;
     private final RecipientRepository recipientRepository;
 
-    public RecipientService(RecipientRepository recipientRepository) {
+    public RecipientService(RecipientFactory recipientFactory, RecipientRepository recipientRepository) {
+        this.recipientFactory = recipientFactory;
         this.recipientRepository = recipientRepository;
     }
 
@@ -14,7 +16,7 @@ public class RecipientService {
         if (recipientRepository.exists(name, address)) {
             throw new RecipientAlreadyExistsException(name, address);
         }
-        Recipient recipient = recipientRepository.createRecipient(name, address);
+        Recipient recipient = recipientFactory.createRecipient(name, address);
         recipientRepository.saveRecipient(recipient);
         return recipient;
     }

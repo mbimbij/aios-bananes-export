@@ -18,6 +18,7 @@ public class RecipientServiceShould {
     private final RecipientId recipientId = new RecipientId("id");
     private Name name;
     private Address address;
+    private RecipientFactory recipientFactory;
     private InMemoryRecipientRepository recipientRepository;
     private RecipientService recipientService;
 
@@ -31,12 +32,13 @@ public class RecipientServiceShould {
                               new Address.City("Paris"),
                               new Address.Country("France"));
 
-        recipientRepository = Mockito.spy(new InMemoryRecipientRepository());
+        recipientFactory = Mockito.spy(new RecipientFactory());
+        recipientRepository = new InMemoryRecipientRepository();
         Mockito.doReturn(recipientId)
-               .when(recipientRepository)
+               .when(recipientFactory)
                .generateRecipientId();
 
-        recipientService = new RecipientService(recipientRepository);
+        recipientService = new RecipientService(recipientFactory, recipientRepository);
     }
 
     @Test
