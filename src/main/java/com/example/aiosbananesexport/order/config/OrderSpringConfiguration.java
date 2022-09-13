@@ -1,8 +1,12 @@
 package com.example.aiosbananesexport.order.config;
 
-import com.example.aiosbananesexport.order.domain.*;
+import com.example.aiosbananesexport.order.domain.entity.OrderFactory;
+import com.example.aiosbananesexport.order.domain.entity.OrderQuantityConfig;
+import com.example.aiosbananesexport.order.domain.entity.OrderRepository;
+import com.example.aiosbananesexport.order.domain.entity.PricePerKilogram;
+import com.example.aiosbananesexport.order.domain.usecase.PlaceOrder;
 import com.example.aiosbananesexport.order.infra.out.InMemoryOrderRepository;
-import com.example.aiosbananesexport.recipient.domain.RecipientRepository;
+import com.example.aiosbananesexport.recipient.domain.entity.RecipientRepository;
 import com.example.aiosbananesexport.recipient.infra.out.InMemoryRecipientRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,12 +15,11 @@ import org.springframework.context.annotation.Configuration;
 public class OrderSpringConfiguration {
 
     @Bean
-    public OrderService orderService(OrderFactory orderFactory,
-                                     OrderRepository orderRepository,
-                                     RecipientRepository recipientRepository,
-                                     PricePerKilogram pricePerKilogram,
-                                     OrderQuantityConfig orderQuantityConfig) {
-        return new OrderService(orderFactory, orderRepository, recipientRepository, pricePerKilogram, orderQuantityConfig);
+    public PlaceOrder orderService(OrderFactory orderFactory,
+                                   OrderRepository orderRepository,
+                                   RecipientRepository recipientRepository,
+                                   PricePerKilogram pricePerKilogram) {
+        return new PlaceOrder(orderFactory, orderRepository, recipientRepository, pricePerKilogram);
     }
 
     @Bean

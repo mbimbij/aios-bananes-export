@@ -1,10 +1,10 @@
-package com.example.aiosbananesexport.order;
+package com.example.aiosbananesexport.order.domain.usecase;
 
-import com.example.aiosbananesexport.order.domain.*;
+import com.example.aiosbananesexport.order.domain.entity.*;
 import com.example.aiosbananesexport.order.domain.exception.DeliveryDateTooEarlyException;
 import com.example.aiosbananesexport.order.domain.exception.OrderQuantityException;
 import com.example.aiosbananesexport.order.infra.out.InMemoryOrderRepository;
-import com.example.aiosbananesexport.recipient.domain.*;
+import com.example.aiosbananesexport.recipient.domain.entity.*;
 import com.example.aiosbananesexport.recipient.infra.out.InMemoryRecipientRepository;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
-public class OrderServiceShould {
+public class PlaceOrderShould {
 
     private OrderId orderId;
     private RecipientId recipientId;
@@ -32,7 +32,7 @@ public class OrderServiceShould {
     private Recipient recipient;
     private RecipientRepository recipientRepository;
     private OrderQuantityConfig orderQuantityConfig;
-    private OrderService orderService;
+    private PlaceOrder placeOrder;
     private LocalDate orderPlacementDate;
 
     @BeforeEach
@@ -60,7 +60,7 @@ public class OrderServiceShould {
         recipientRepository.saveRecipient(recipient);
 
         orderQuantityConfig = new OrderQuantityConfig(0, 10_000, 25);
-        orderService = new OrderService(orderFactory, orderRepository, recipientRepository, pricePerKilogram, orderQuantityConfig);
+        placeOrder = new PlaceOrder(orderFactory, orderRepository, recipientRepository, pricePerKilogram);
     }
 
     @Test
@@ -73,10 +73,10 @@ public class OrderServiceShould {
         PlaceOrderCommand placeOrderCommand = new PlaceOrderCommand(name, address, quantity, deliveryDate);
 
         // WHEN
-        Order order = orderService.placeOrder(placeOrderCommand);
+        Order order = placeOrder.placeOrder(placeOrderCommand);
 
         // THEN
-        Optional<Order> actualOrder = orderService.getOrderById(order.getOrderId());
+        Optional<Order> actualOrder = orderRepository.getOrderById(order.getOrderId());
         assertThat(actualOrder).hasValue(expectedOrder);
     }
 
@@ -88,7 +88,7 @@ public class OrderServiceShould {
         PlaceOrderCommand placeOrderCommand = new PlaceOrderCommand(name, address, quantity, deliveryDate);
 
         // WHEN
-        ThrowableAssert.ThrowingCallable throwingCallable = () -> orderService.placeOrder(placeOrderCommand);
+        ThrowableAssert.ThrowingCallable throwingCallable = () -> placeOrder.placeOrder(placeOrderCommand);
 
         // THEN
         assertThatThrownBy(throwingCallable).isInstanceOf(DeliveryDateTooEarlyException.class);
@@ -107,7 +107,7 @@ public class OrderServiceShould {
         PlaceOrderCommand placeOrderCommand = new PlaceOrderCommand(name, address, quantity, deliveryDate);
 
         // WHEN
-        ThrowableAssert.ThrowingCallable throwingCallable = () -> orderService.placeOrder(placeOrderCommand);
+        ThrowableAssert.ThrowingCallable throwingCallable = () -> placeOrder.placeOrder(placeOrderCommand);
 
         // THEN
         assertThatThrownBy(throwingCallable).isInstanceOf(OrderQuantityException.class);

@@ -1,6 +1,4 @@
-package com.example.aiosbananesexport.order.domain;
-
-import com.example.aiosbananesexport.recipient.domain.Recipient;
+package com.example.aiosbananesexport.order.domain.entity;
 
 import java.util.Optional;
 

@@ -2,7 +2,7 @@ package com.example.aiosbananesexport.order.domain.exception;
 
 import com.example.aiosbananesexport.common.DateFormat;
 import com.example.aiosbananesexport.common.DomainException;
-import com.example.aiosbananesexport.order.domain.Order;
+import com.example.aiosbananesexport.order.domain.entity.Order;
 
 public class DeliveryDateTooEarlyException extends DomainException {
 

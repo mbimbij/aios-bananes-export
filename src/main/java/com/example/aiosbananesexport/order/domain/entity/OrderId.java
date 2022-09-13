@@ -1,4 +1,4 @@
-package com.example.aiosbananesexport.order.domain;
+package com.example.aiosbananesexport.order.domain.entity;
 
 import com.example.aiosbananesexport.common.Id;
 

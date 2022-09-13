@@ -1,9 +1,9 @@
-package com.example.aiosbananesexport.recipient.exception;
+package com.example.aiosbananesexport.recipient.domain.exception;
 
 import com.example.aiosbananesexport.common.DomainException;
-import com.example.aiosbananesexport.recipient.domain.Address;
-import com.example.aiosbananesexport.recipient.domain.Name;
-import com.example.aiosbananesexport.recipient.domain.RecipientId;
+import com.example.aiosbananesexport.recipient.domain.entity.Address;
+import com.example.aiosbananesexport.recipient.domain.entity.Name;
+import com.example.aiosbananesexport.recipient.domain.entity.RecipientId;
 
 public class RecipientNotFoundException extends DomainException {
     public RecipientNotFoundException(RecipientId recipientId) {

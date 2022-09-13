@@ -1,10 +1,8 @@
 package com.example.aiosbananesexport.order.infra.out;
 
-import com.example.aiosbananesexport.order.domain.Order;
-import com.example.aiosbananesexport.order.domain.OrderId;
-import com.example.aiosbananesexport.order.domain.OrderRepository;
-import com.example.aiosbananesexport.order.domain.Price;
-import com.example.aiosbananesexport.recipient.domain.Recipient;
+import com.example.aiosbananesexport.order.domain.entity.Order;
+import com.example.aiosbananesexport.order.domain.entity.OrderId;
+import com.example.aiosbananesexport.order.domain.entity.OrderRepository;
 
 import java.util.*;
 

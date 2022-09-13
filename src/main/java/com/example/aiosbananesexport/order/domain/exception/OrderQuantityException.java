@@ -1,7 +1,7 @@
 package com.example.aiosbananesexport.order.domain.exception;
 
 import com.example.aiosbananesexport.common.DomainException;
-import com.example.aiosbananesexport.order.domain.OrderQuantityConfig;
+import com.example.aiosbananesexport.order.domain.entity.OrderQuantityConfig;
 
 public class OrderQuantityException extends DomainException {
 

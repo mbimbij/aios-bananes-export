@@ -1,6 +1,6 @@
 package com.example.aiosbananesexport.recipient.infra.out;
 
-import com.example.aiosbananesexport.recipient.domain.*;
+import com.example.aiosbananesexport.recipient.domain.entity.*;
 
 import java.util.*;
 

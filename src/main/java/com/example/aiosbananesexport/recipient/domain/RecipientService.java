@@ -1,7 +1,8 @@
 package com.example.aiosbananesexport.recipient.domain;
 
-import com.example.aiosbananesexport.recipient.exception.RecipientAlreadyExistsException;
-import com.example.aiosbananesexport.recipient.exception.RecipientNotFoundException;
+import com.example.aiosbananesexport.recipient.domain.entity.*;
+import com.example.aiosbananesexport.recipient.domain.exception.RecipientAlreadyExistsException;
+import com.example.aiosbananesexport.recipient.domain.exception.RecipientNotFoundException;
 
 public class RecipientService {
     private final RecipientFactory recipientFactory;

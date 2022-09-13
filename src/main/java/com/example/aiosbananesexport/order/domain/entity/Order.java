@@ -1,11 +1,11 @@
-package com.example.aiosbananesexport.order.domain;
+package com.example.aiosbananesexport.order.domain.entity;
 
 import com.example.aiosbananesexport.common.DateFormat;
 import com.example.aiosbananesexport.common.SelfValidating;
 import com.example.aiosbananesexport.common.ValueObject;
 import com.example.aiosbananesexport.order.domain.exception.DeliveryDateTooEarlyException;
 import com.example.aiosbananesexport.order.domain.exception.OrderQuantityException;
-import com.example.aiosbananesexport.recipient.domain.Recipient;
+import com.example.aiosbananesexport.recipient.domain.entity.Recipient;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

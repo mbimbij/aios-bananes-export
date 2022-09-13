@@ -1,6 +1,6 @@
-package com.example.aiosbananesexport.order.domain;
+package com.example.aiosbananesexport.order.domain.entity;
 
-import com.example.aiosbananesexport.recipient.domain.Recipient;
+import com.example.aiosbananesexport.recipient.domain.entity.Recipient;
 
 import java.util.UUID;
 

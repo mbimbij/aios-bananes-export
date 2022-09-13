@@ -1,4 +1,4 @@
-package com.example.aiosbananesexport.recipient.domain;
+package com.example.aiosbananesexport.recipient.domain.entity;
 
 import com.example.aiosbananesexport.common.Id;
 import lombok.EqualsAndHashCode;

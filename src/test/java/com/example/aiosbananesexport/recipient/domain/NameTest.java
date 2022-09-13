@@ -1,5 +1,6 @@
 package com.example.aiosbananesexport.recipient.domain;
 
+import com.example.aiosbananesexport.recipient.domain.entity.Name;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 

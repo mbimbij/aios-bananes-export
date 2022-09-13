@@ -1,5 +1,6 @@
 package com.example.aiosbananesexport.recipient.domain;
 
+import com.example.aiosbananesexport.recipient.domain.entity.RecipientId;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
