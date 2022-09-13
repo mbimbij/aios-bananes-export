@@ -15,10 +15,10 @@ import org.springframework.context.annotation.Configuration;
 public class OrderSpringConfiguration {
 
     @Bean
-    public PlaceOrder orderService(OrderFactory orderFactory,
-                                   OrderRepository orderRepository,
-                                   RecipientRepository recipientRepository,
-                                   PricePerKilogram pricePerKilogram) {
+    public PlaceOrder placeOrder(OrderFactory orderFactory,
+                                 OrderRepository orderRepository,
+                                 RecipientRepository recipientRepository,
+                                 PricePerKilogram pricePerKilogram) {
         return new PlaceOrder(orderFactory, orderRepository, recipientRepository, pricePerKilogram);
     }
 

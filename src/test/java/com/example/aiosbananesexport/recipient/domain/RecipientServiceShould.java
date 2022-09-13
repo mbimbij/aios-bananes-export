@@ -5,6 +5,7 @@ import com.example.aiosbananesexport.recipient.domain.exception.RecipientAlready
 import com.example.aiosbananesexport.recipient.domain.exception.RecipientNotFoundException;
 import com.example.aiosbananesexport.recipient.domain.usecase.CreateRecipient;
 import com.example.aiosbananesexport.recipient.domain.usecase.RecipientService;
+import com.example.aiosbananesexport.recipient.domain.usecase.RenameRecipient;
 import com.example.aiosbananesexport.recipient.infra.out.InMemoryRecipientRepository;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +26,7 @@ public class RecipientServiceShould {
     private RecipientService recipientService;
 
     private CreateRecipient createRecipient;
+    private RenameRecipient renameRecipient;
 
     @BeforeEach
     void setUp() {
@@ -41,8 +43,9 @@ public class RecipientServiceShould {
                .generateRecipientId();
         recipientRepository = new InMemoryRecipientRepository();
 
-        recipientService = new RecipientService(recipientFactory, recipientRepository);
+        recipientService = new RecipientService(recipientRepository);
         createRecipient = new CreateRecipient(recipientFactory, recipientRepository);
+        renameRecipient = new RenameRecipient(recipientRepository);
     }
 
     @Test
@@ -80,7 +83,7 @@ public class RecipientServiceShould {
         Recipient expectedRecipient = new Recipient(recipientId, newName, address);
 
         // WHEN
-        recipientService.renameRecipient(recipientId, newName);
+        renameRecipient.renameRecipient(recipientId, newName);
 
         // THEN
         Optional<Recipient> actualRecipient = recipientRepository.getById(recipientId);
@@ -95,7 +98,7 @@ public class RecipientServiceShould {
                                 new Name.LastName("lastName"));
 
         // WHEN
-        ThrowableAssert.ThrowingCallable throwingCallable = () -> recipientService.renameRecipient(new RecipientId("nonExistingId"), newName);
+        ThrowableAssert.ThrowingCallable throwingCallable = () -> renameRecipient.renameRecipient(new RecipientId("nonExistingId"), newName);
 
         // THEN
         assertThatThrownBy(throwingCallable)
