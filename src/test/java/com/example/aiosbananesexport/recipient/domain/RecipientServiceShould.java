@@ -3,6 +3,8 @@ package com.example.aiosbananesexport.recipient.domain;
 import com.example.aiosbananesexport.recipient.domain.entity.*;
 import com.example.aiosbananesexport.recipient.domain.exception.RecipientAlreadyExistsException;
 import com.example.aiosbananesexport.recipient.domain.exception.RecipientNotFoundException;
+import com.example.aiosbananesexport.recipient.domain.usecase.CreateRecipient;
+import com.example.aiosbananesexport.recipient.domain.usecase.RecipientService;
 import com.example.aiosbananesexport.recipient.infra.out.InMemoryRecipientRepository;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,27 +21,28 @@ public class RecipientServiceShould {
     private final RecipientId recipientId = new RecipientId("id");
     private Name name;
     private Address address;
-    private RecipientFactory recipientFactory;
     private InMemoryRecipientRepository recipientRepository;
     private RecipientService recipientService;
+
+    private CreateRecipient createRecipient;
 
     @BeforeEach
     void setUp() {
         name = new Name(new Name.FirstName("firstName"),
                         new Name.LastName("lastName"));
-
         address = new Address(new Address.Street("address"),
                               new Address.PostalCode(75019),
                               new Address.City("Paris"),
                               new Address.Country("France"));
 
-        recipientFactory = Mockito.spy(new RecipientFactory());
-        recipientRepository = new InMemoryRecipientRepository();
+        RecipientFactory recipientFactory = Mockito.spy(new RecipientFactory());
         Mockito.doReturn(recipientId)
                .when(recipientFactory)
                .generateRecipientId();
+        recipientRepository = new InMemoryRecipientRepository();
 
         recipientService = new RecipientService(recipientFactory, recipientRepository);
+        createRecipient = new CreateRecipient(recipientFactory, recipientRepository);
     }
 
     @Test
@@ -48,7 +51,7 @@ public class RecipientServiceShould {
         Recipient expectedRecipient = new Recipient(recipientId, name, address);
 
         // WHEN
-        recipientService.createRecipient(name, address);
+        createRecipient.createRecipient(name, address);
 
         // THEN
         Optional<Recipient> actualRecipient = recipientRepository.getById(recipientId);
@@ -58,10 +61,10 @@ public class RecipientServiceShould {
     @Test
     void throw_an_exception__when_trying_to_create_a_recipient__but_user_exists_with_same_attributes() {
         // GIVEN
-        recipientService.createRecipient(name, address);
+        createRecipient.createRecipient(name, address);
 
         // WHEN
-        ThrowableAssert.ThrowingCallable throwingCallable = () -> recipientService.createRecipient(name, address);
+        ThrowableAssert.ThrowingCallable throwingCallable = () -> createRecipient.createRecipient(name, address);
 
         // THEN
         assertThatThrownBy(throwingCallable).isInstanceOf(RecipientAlreadyExistsException.class);
@@ -70,7 +73,7 @@ public class RecipientServiceShould {
     @Test
     void rename_an_existing_recipient() {
         // GIVEN
-        recipientService.createRecipient(name, address);
+        createRecipient.createRecipient(name, address);
         Name newName = new Name(new Name.FirstName("newFirstName"),
                                 new Name.LastName("lastName"));
 
@@ -87,7 +90,7 @@ public class RecipientServiceShould {
     @Test
     void throw_an_exception__when_renaming_a_non_existing_recipient() {
         // GIVEN
-        recipientService.createRecipient(name, address);
+        createRecipient.createRecipient(name, address);
         Name newName = new Name(new Name.FirstName("newFirstName"),
                                 new Name.LastName("lastName"));
 
@@ -102,7 +105,7 @@ public class RecipientServiceShould {
     @Test
     void delete_an_existing_recipient() {
         // GIVEN
-        recipientService.createRecipient(name, address);
+        createRecipient.createRecipient(name, address);
 
         // WHEN
         recipientService.deleteRecipient(recipientId);
@@ -115,7 +118,7 @@ public class RecipientServiceShould {
     @Test
     void throw_an_exception__when_trying_to_delete_a_non_existing_recipient() {
         // GIVEN
-        recipientService.createRecipient(name, address);
+        createRecipient.createRecipient(name, address);
 
         // WHEN
         ThrowableAssert.ThrowingCallable throwingCallable = () -> recipientService.deleteRecipient(new RecipientId("nonExistingId"));
