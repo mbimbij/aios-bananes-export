@@ -1,4 +1,4 @@
-package com.example.aiosbananesexport.recipient.domain;
+package com.example.aiosbananesexport.recipient.domain.usecase;
 
 import com.example.aiosbananesexport.recipient.domain.entity.*;
 import com.example.aiosbananesexport.recipient.domain.exception.RecipientAlreadyExistsException;
@@ -17,7 +17,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class DeleteRecipientShould {
+public class CreateRecipientShould {
 
     private final RecipientId recipientId = new RecipientId("id");
     private Name name;
