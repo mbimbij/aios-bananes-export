@@ -1,13 +1,12 @@
 package com.example.aiosbananesexport.recipient.domain.usecase;
 
 import com.example.aiosbananesexport.recipient.domain.entity.*;
-import com.example.aiosbananesexport.recipient.domain.exception.RecipientAlreadyExistsException;
 import com.example.aiosbananesexport.recipient.domain.exception.RecipientNotFoundException;
 
-public class RecipientService {
+public class DeleteRecipient {
     private final RecipientRepository recipientRepository;
 
-    public RecipientService(RecipientRepository recipientRepository) {
+    public DeleteRecipient(RecipientRepository recipientRepository) {
         this.recipientRepository = recipientRepository;
     }
 
