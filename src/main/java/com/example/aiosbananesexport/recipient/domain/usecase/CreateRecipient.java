@@ -13,11 +13,15 @@ public class CreateRecipient {
     }
 
     public Recipient createRecipient(Name name, Address address) {
-        if (recipientRepository.exists(name, address)) {
-            throw new RecipientAlreadyExistsException(name, address);
-        }
+        verifyRecipientNotAlreadyExists(name, address);
         Recipient recipient = recipientFactory.createRecipient(name, address);
         recipientRepository.saveRecipient(recipient);
         return recipient;
+    }
+
+    private void verifyRecipientNotAlreadyExists(Name name, Address address) {
+        if (recipientRepository.exists(name, address)) {
+            throw new RecipientAlreadyExistsException(name, address);
+        }
     }
 }

@@ -30,16 +30,19 @@ public class PlaceOrder {
 
         return recipientRepository.getByNameAndAddress(name, address)
                                   .map(recipient -> this.createOrder(recipient, placeOrderCommand))
+                                  .map(order -> {
+                                      order.validate();
+                                      orderRepository.saveOrder(order);
+                                      return order;
+                                  })
                                   .orElseThrow(() -> new RecipientNotFoundException(name, address));
     }
 
     private Order createOrder(Recipient recipient, PlaceOrderCommand placeOrderCommand) {
         Price price = new Price(placeOrderCommand.getQuantity(), pricePerKilogram);
-        Order order = this.orderFactory.createOrder(recipient,
-                                                    placeOrderCommand.getQuantity(),
-                                                    placeOrderCommand.getDeliveryDate(),
-                                                    price);
-        this.orderRepository.saveOrder(order);
-        return order;
+        return this.orderFactory.createOrder(recipient,
+                                             placeOrderCommand.getQuantity(),
+                                             placeOrderCommand.getDeliveryDate(),
+                                             price);
     }
 }

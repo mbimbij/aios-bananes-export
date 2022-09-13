@@ -10,12 +10,10 @@ public class OrderFactory {
     }
 
     public Order createOrder(Recipient recipient, Order.Quantity quantity, Order.DeliveryDate deliveryDate, Price price) {
-        Order order = new Order(generateOrderId(),
-                                recipient,
-                                quantity,
-                                deliveryDate,
-                                price);
-        order.validate();
-        return order;
+        return new Order(generateOrderId(),
+                         recipient,
+                         quantity,
+                         deliveryDate,
+                         price);
     }
 }
