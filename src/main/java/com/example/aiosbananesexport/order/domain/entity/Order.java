@@ -17,7 +17,7 @@ import java.time.LocalDate;
 @EqualsAndHashCode
 @Getter
 @ToString
-public class Order {
+public class Order implements SelfValidating {
     private final OrderId orderId;
     private final Recipient recipient;
     private final Quantity quantity;
@@ -34,6 +34,7 @@ public class Order {
         this.price = price;
     }
 
+    @Override
     public void validate() {
         deliveryDate.validate();
         quantity.validate();
