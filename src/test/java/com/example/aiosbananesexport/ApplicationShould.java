@@ -1,5 +1,9 @@
 package com.example.aiosbananesexport;
 
+import com.example.aiosbananesexport.domain.DomainEvent;
+import com.example.aiosbananesexport.domain.DomainEventSender;
+import com.example.aiosbananesexport.domain.Order;
+import com.example.aiosbananesexport.domain.OrderCreatedEvent;
 import com.example.aiosbananesexport.infra.in.CreateOrderRequestDto;
 import com.example.aiosbananesexport.infra.in.CreateOrderResponseDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,13 +12,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
+import static com.example.aiosbananesexport.utils.Uncheck.uncheck;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        classes = {
+                ApplicationTestConfiguration.class
+        }
+)
 class ApplicationShould {
 
     @Autowired
@@ -22,6 +33,9 @@ class ApplicationShould {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private DomainEventSender domainEventSender;
 
     @Test
     void load_context_with_no_problem() {
@@ -36,12 +50,16 @@ class ApplicationShould {
         int postalCode = 75019;
         String city = "paris";
         String country = "france";
-        String deliveryDate = LocalDate.now()
-                                       .plusWeeks(1)
-                                       .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-        int quantityKg = 50;
-        CreateOrderRequestDto requestDto = new CreateOrderRequestDto(firstName, lastName, address, postalCode, city, country, deliveryDate, quantityKg);
-        CreateOrderResponseDto expectedResponseDto = new CreateOrderResponseDto("any", firstName, lastName, address, postalCode, city, country, deliveryDate, quantityKg);
+        LocalDate deliveryDate = LocalDate.now()
+                                          .plusWeeks(1);
+        String deliveryDateString = deliveryDate
+                .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        int quantityKg = 25;
+        CreateOrderRequestDto requestDto = new CreateOrderRequestDto(firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg);
+        CreateOrderResponseDto expectedResponseDto = new CreateOrderResponseDto("anyCreateOrderResponseDtoId", firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg);
+
+        double expectedPrice = 62.5;
+        OrderCreatedEvent expectedOrderCreatedEvent = new OrderCreatedEvent("anyOrderCreatedEventId", new Order("anyOrderId", firstName, lastName, address, postalCode, city, country, deliveryDate, quantityKg, expectedPrice));
 
         // WHEN
         WebTestClient.ResponseSpec responseSpec = webTestClient.post()
@@ -54,20 +72,25 @@ class ApplicationShould {
                 .isCreated()
                 .expectBody()
                 .consumeWith(result -> {
-                    try {
-                        byte[] responseBody = result.getResponseBody();
-                        CreateOrderResponseDto actualResponseDto = objectMapper.readValue(responseBody, CreateOrderResponseDto.class);
-                        assertSoftly(softAssertions -> {
-                            softAssertions.assertThat(actualResponseDto)
-                                          .usingRecursiveComparison()
-                                          .ignoringFields("id")
-                                          .isEqualTo(expectedResponseDto);
-                            softAssertions.assertThat(actualResponseDto.getId())
-                                          .isNotBlank();
-                        });
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                    byte[] responseBody = result.getResponseBody();
+                    CreateOrderResponseDto actualResponseDto;
+                    actualResponseDto = uncheck((byte[] r) -> objectMapper.readValue(r, CreateOrderResponseDto.class)).apply(responseBody);
+                    assertSoftly(softAssertions -> {
+                        softAssertions.assertThat(actualResponseDto)
+                                      .usingRecursiveComparison()
+                                      .ignoringFields("id")
+                                      .isEqualTo(expectedResponseDto);
+                        softAssertions.assertThat(actualResponseDto.getId())
+                                      .isNotBlank();
+                    });
                 });
+
+        // AND an "OrderCreatedEvent" is produced and sent
+        List<DomainEvent> domainEvents = ((MockDomainEventSender) domainEventSender).getDomainEvents();
+        assertThat(domainEvents).anySatisfy(domainEvent -> assertThat(domainEvent)
+                .usingRecursiveComparison()
+                .ignoringFields("id", "order.id")
+                .isEqualTo(expectedOrderCreatedEvent));
     }
+
 }
