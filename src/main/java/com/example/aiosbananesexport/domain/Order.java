@@ -1,14 +1,15 @@
 package com.example.aiosbananesexport.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.*;
+import lombok.experimental.Wither;
 
 import java.time.LocalDate;
 
 @AllArgsConstructor
 @EqualsAndHashCode
 @Getter
+@ToString
+@With
 public class Order {
     String id;
     String firstName;
@@ -20,4 +21,10 @@ public class Order {
     LocalDate deliveryDate;
     int quantityKg;
     double price;
+
+    public void validate() throws OrderDeliveryTooEarlyException {
+        if (deliveryDate.isBefore(LocalDate.now().plusWeeks(1))) {
+            throw new OrderDeliveryTooEarlyException(this);
+        }
+    }
 }

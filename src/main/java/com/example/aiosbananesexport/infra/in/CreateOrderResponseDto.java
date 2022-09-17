@@ -13,4 +13,5 @@ public class CreateOrderResponseDto {
     String country;
     String deliveryDate;
     int quantityKg;
+    String price;
 }

@@ -6,6 +6,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
+import static com.example.aiosbananesexport.infra.in.DateTimeFormat.DATE_PATTERN;
+
 public class OrderFactory {
     Order createOrder(CreateOrderRequestDto requestDto) {
         return new Order(generateId(),
@@ -15,9 +17,8 @@ public class OrderFactory {
                          requestDto.getPostalCode(),
                          requestDto.getCity(),
                          requestDto.getCountry(),
-                         LocalDate.parse(
-                                        requestDto.getDeliveryDate(),
-                                        DateTimeFormatter.ofPattern("dd-MM-yyyy")),
+                         LocalDate.parse(requestDto.getDeliveryDate(),
+                                         DateTimeFormatter.ofPattern(DATE_PATTERN)),
                          requestDto.getQuantityKg(),
                          requestDto.getQuantityKg() * 2.5);
     }

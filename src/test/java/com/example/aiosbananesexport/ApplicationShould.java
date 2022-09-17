@@ -1,35 +1,47 @@
 package com.example.aiosbananesexport;
 
 import com.example.aiosbananesexport.domain.*;
+import com.example.aiosbananesexport.infra.in.BusinessErrorDto;
 import com.example.aiosbananesexport.infra.in.CreateOrderRequestDto;
 import com.example.aiosbananesexport.infra.in.CreateOrderResponseDto;
 import com.example.aiosbananesexport.infra.out.InMemoryOrderRepository;
 import com.example.aiosbananesexport.infra.out.MockDomainEventPublisher;
+import com.example.aiosbananesexport.infra.in.DateTimeFormat;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import static com.example.aiosbananesexport.utils.Uncheck.uncheck;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        classes = {
-                ApplicationTestConfiguration.class
-        }
+        classes = ApplicationTestConfiguration.class
 )
 class ApplicationShould {
 
+    private final String firstName = "firstName";
+    private final String lastName = "lastName";
+    private final String address = "address";
+    private final int postalCode = 75019;
+    private final String city = "paris";
+    private final String country = "france";
+    private final LocalDate deliveryDate = LocalDate.now().plusWeeks(1);
+    private final String deliveryDateString = deliveryDate.format(DateTimeFormat.DATE_FORMATTER);
+    private final int quantityKg = 25;
+    private final String orderId = "someOrderId";
+    private final String anyOrderCreatedEventId = "anyOrderCreatedEventId";
+    private final ZonedDateTime eventDateTime = ZonedDateTime.now();
     @Autowired
     private WebTestClient webTestClient;
 
@@ -44,71 +56,65 @@ class ApplicationShould {
 
     @Autowired
     private DomainEventPublisher domainEventPublisher;
+    private CreateOrderRequestDto requestDto;
+    private Order order;
 
-    @Test
-    void load_context_with_no_problem() {
+    @BeforeEach
+    void setUp() {
+        requestDto = new CreateOrderRequestDto(firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg);
+        Mockito.doReturn(orderId).when(orderFactory).generateId();
+        DomainEvent.setIdGenerator(() -> anyOrderCreatedEventId);
+        DomainEvent.setEventDateTimeSupplier(() -> eventDateTime);
+        order = new Order(orderId, firstName, lastName, address, postalCode, city, country, deliveryDate, quantityKg, 62.5);
     }
 
     @Test
     void create_an_order__in_nominal_case() {
-        // GIVEN
-        String firstName = "firstName";
-        String lastName = "lastName";
-        String address = "address";
-        int postalCode = 75019;
-        String city = "paris";
-        String country = "france";
-        LocalDate deliveryDate = LocalDate.now()
-                                          .plusWeeks(1);
-        String deliveryDateString = deliveryDate
-                .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-        int quantityKg = 25;
-        CreateOrderRequestDto requestDto = new CreateOrderRequestDto(firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg);
-        CreateOrderResponseDto expectedResponseDto = new CreateOrderResponseDto("anyCreateOrderResponseDtoId", firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg);
+        // GIVEN expected outcomes
+        CreateOrderResponseDto expectedResponseDto = new CreateOrderResponseDto(orderId, firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg, "62.50");
+        OrderCreatedEvent expectedEvent = new OrderCreatedEvent(anyOrderCreatedEventId, DomainEvent.getEventDateTime(), order);
 
-        double expectedPrice = 62.5;
-        String orderId = "someOrderId";
-        Mockito.doReturn(orderId).when(orderFactory).generateId();
-        Order expectedOrder = new Order(orderId, firstName, lastName, address, postalCode, city, country, deliveryDate, quantityKg, expectedPrice);
-        String anyOrderCreatedEventId = "anyOrderCreatedEventId";
-        DomainEvent.setIdGenerator(() -> anyOrderCreatedEventId);
-        ZonedDateTime eventDateTime = ZonedDateTime.now();
-        DomainEvent.setEventDateTimeSupplier(() -> eventDateTime);
-        OrderCreatedEvent expectedEvent = new OrderCreatedEvent(anyOrderCreatedEventId, DomainEvent.getEventDateTime(), expectedOrder);
+        // WHEN performing the REST request
+        WebTestClient.ResponseSpec responseSpec = webTestClient.post().uri("/order").bodyValue(requestDto).exchange();
 
-        // WHEN
-        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
-                                                               .uri("/order")
-                                                               .bodyValue(requestDto)
-                                                               .exchange();
         // THEN the REST response is correct
-        responseSpec
-                .expectStatus()
-                .isCreated()
-                .expectBody()
-                .consumeWith(result -> {
-                    byte[] responseBody = result.getResponseBody();
-                    CreateOrderResponseDto actualResponseDto = uncheck((byte[] r) -> objectMapper.readValue(r, CreateOrderResponseDto.class)).apply(responseBody);
-                    assertSoftly(softAssertions -> {
-                        softAssertions.assertThat(actualResponseDto)
-                                      .usingRecursiveComparison()
-                                      .ignoringFields("id")
-                                      .isEqualTo(expectedResponseDto);
-                        softAssertions.assertThat(actualResponseDto.getId())
-                                      .isNotBlank();
+        responseSpec.expectStatus()
+                    .isCreated()
+                    .expectBody(CreateOrderResponseDto.class)
+                    .value(actualResponseDto -> {
+                        assertSoftly(softAssertions -> {
+                            assertThat(actualResponseDto).usingRecursiveComparison().isEqualTo(expectedResponseDto);
+                        });
                     });
-                });
 
         // AND the order is saved to the repository
-        assertThat(((InMemoryOrderRepository)orderRepository).getOrders()).anySatisfy(order -> assertThat(order)
-                .usingRecursiveComparison()
-                .isEqualTo(expectedOrder));
+        assertThat(((InMemoryOrderRepository) orderRepository).getOrders()).anySatisfy(order -> assertThat(order).usingRecursiveComparison().isEqualTo(order));
 
-        // AND an "OrderCreatedEvent" is produced and sent
+        // AND an "OrderCreatedEvent" is published
         List<DomainEvent> domainEvents = ((MockDomainEventPublisher) domainEventPublisher).getDomainEvents();
-        assertThat(domainEvents).anySatisfy(domainEvent -> assertThat(domainEvent)
-                .usingRecursiveComparison()
-                .isEqualTo(expectedEvent));
+        assertThat(domainEvents).anySatisfy(domainEvent -> assertThat(domainEvent).usingRecursiveComparison().isEqualTo(expectedEvent));
     }
 
+
+    @Test
+    void return_an_error__when_delivery_date_too_early() {
+        // GIVEN
+        LocalDate errorDeliveryDate = deliveryDate.minusDays(1);
+        String deliveryDateString = errorDeliveryDate.format(DateTimeFormat.DATE_FORMATTER);
+        CreateOrderRequestDto requestDto = new CreateOrderRequestDto(firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg);
+        Order errorOrder = order.withDeliveryDate(errorDeliveryDate);
+        OrderDeliveryTooEarlyException exception = new OrderDeliveryTooEarlyException(errorOrder);
+        BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(HttpStatus.CONFLICT, exception.getMessage(), exception);
+
+        // WHEN performing the REST request
+        WebTestClient.ResponseSpec responseSpec = webTestClient.post().uri("/order").bodyValue(requestDto).exchange();
+
+        // THEN the REST response is correct
+        responseSpec.expectStatus()
+                    .isEqualTo(409)
+                    .expectBody(BusinessErrorDto.class)
+                    .value(actualResponseDto -> {
+                        assertThat(actualResponseDto).usingRecursiveComparison().isEqualTo(BusinessErrorDto);
+                    });
+    }
 }
