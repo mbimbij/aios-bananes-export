@@ -13,7 +13,7 @@ public class PlaceOrder {
     private final OrderRepository orderRepository;
     private final DomainEventPublisher domainEventPublisher;
 
-    public Order placeOrder(CreateOrderRequestDto requestDto) throws OrderDeliveryTooEarlyException {
+    public Order handle(CreateOrderRequestDto requestDto) throws OrderDeliveryTooEarlyException {
         Order order = orderFactory.createOrder(requestDto);
         try {
             order.validate();

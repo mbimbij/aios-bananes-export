@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.time.ZonedDateTime;
+
 @RestController
 public class ApplicationRestController {
 
@@ -17,25 +19,20 @@ public class ApplicationRestController {
     @PostMapping(value = "/order")
     @ResponseStatus(code = HttpStatus.CREATED)
     public Mono<CreateOrderResponseDto> createOrder(@RequestBody CreateOrderRequestDto requestDto) throws OrderDeliveryTooEarlyException {
-        Order order = placeOrder.placeOrder(requestDto);
-        CreateOrderResponseDto responseDto = new CreateOrderResponseDto(order.getId(),
-                                                                        order.getFirstName(),
-                                                                        order.getLastName(),
-                                                                        order.getAddress(),
-                                                                        order.getPostalCode(),
-                                                                        order.getCity(),
-                                                                        order.getCountry(),
-                                                                        order.getDeliveryDate().format(DateTimeFormat.DATE_FORMATTER),
-                                                                        order.getQuantityKg(),
-                                                                        String.format("%.2f", order.getPrice()));
+        Order order = placeOrder.handle(requestDto);
+        CreateOrderResponseDto responseDto = new CreateOrderResponseDto(order);
         return Mono.just(responseDto);
     }
 
     @ExceptionHandler({OrderDeliveryTooEarlyException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public Mono<BusinessErrorDto> handleOrderDeliveryTooEarlyException(OrderDeliveryTooEarlyException exception) {
-        BusinessErrorDto businessErrorDto = new BusinessErrorDto(HttpStatus.CONFLICT, exception.getMessage(), exception);
+        BusinessErrorDto businessErrorDto = new BusinessErrorDto(exception.getMessage(), exception, currentTimestamp());
         return Mono.just(businessErrorDto);
+    }
+
+    public ZonedDateTime currentTimestamp() {
+        return ZonedDateTime.now();
     }
 
 }

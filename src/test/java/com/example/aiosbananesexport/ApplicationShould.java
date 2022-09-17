@@ -1,20 +1,15 @@
 package com.example.aiosbananesexport;
 
 import com.example.aiosbananesexport.domain.*;
-import com.example.aiosbananesexport.infra.in.BusinessErrorDto;
-import com.example.aiosbananesexport.infra.in.CreateOrderRequestDto;
-import com.example.aiosbananesexport.infra.in.CreateOrderResponseDto;
+import com.example.aiosbananesexport.infra.in.*;
 import com.example.aiosbananesexport.infra.out.InMemoryOrderRepository;
 import com.example.aiosbananesexport.infra.out.MockDomainEventPublisher;
-import com.example.aiosbananesexport.infra.in.DateTimeFormat;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.time.LocalDate;
@@ -22,7 +17,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -45,11 +39,11 @@ class ApplicationShould {
     @Autowired
     private WebTestClient webTestClient;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @SpyBean
     private OrderFactory orderFactory;
+
+    @SpyBean
+    private ApplicationRestController applicationRestController;
 
     @Autowired
     private OrderRepository orderRepository;
@@ -81,11 +75,7 @@ class ApplicationShould {
         responseSpec.expectStatus()
                     .isCreated()
                     .expectBody(CreateOrderResponseDto.class)
-                    .value(actualResponseDto -> {
-                        assertSoftly(softAssertions -> {
-                            assertThat(actualResponseDto).usingRecursiveComparison().isEqualTo(expectedResponseDto);
-                        });
-                    });
+                    .value(actualResponseDto -> assertThat(actualResponseDto).usingRecursiveComparison().isEqualTo(expectedResponseDto));
 
         // AND the order is saved to the repository
         assertThat(((InMemoryOrderRepository) orderRepository).getOrders()).anySatisfy(order -> assertThat(order).usingRecursiveComparison().isEqualTo(order));
@@ -104,17 +94,19 @@ class ApplicationShould {
         CreateOrderRequestDto requestDto = new CreateOrderRequestDto(firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg);
         Order errorOrder = order.withDeliveryDate(errorDeliveryDate);
         OrderDeliveryTooEarlyException exception = new OrderDeliveryTooEarlyException(errorOrder);
-        BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(HttpStatus.CONFLICT, exception.getMessage(), exception);
+        ZonedDateTime exceptionTimestamp = ZonedDateTime.now();
+        Mockito.doReturn(exceptionTimestamp)
+               .when(applicationRestController)
+               .currentTimestamp();
+        BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(exception.getMessage(), exception, exceptionTimestamp);
 
         // WHEN performing the REST request
         WebTestClient.ResponseSpec responseSpec = webTestClient.post().uri("/order").bodyValue(requestDto).exchange();
 
-        // THEN the REST response is correct
+        // THEN the REST response is http 409 with error response
         responseSpec.expectStatus()
                     .isEqualTo(409)
                     .expectBody(BusinessErrorDto.class)
-                    .value(actualResponseDto -> {
-                        assertThat(actualResponseDto).usingRecursiveComparison().isEqualTo(BusinessErrorDto);
-                    });
+                    .value(actualResponseDto -> assertThat(actualResponseDto).usingRecursiveComparison().isEqualTo(BusinessErrorDto));
     }
 }
