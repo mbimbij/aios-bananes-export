@@ -1,6 +1,6 @@
 package com.example.aiosbananesexport;
 
-import com.example.aiosbananesexport.domain.DomainEventSender;
+import com.example.aiosbananesexport.domain.DomainEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Import;
 @Import(Application.class)
 public class ApplicationTestConfiguration {
     @Bean
-    public DomainEventSender domainEventSender() {
-        return new MockDomainEventSender();
+    public DomainEventPublisher domainEventSender() {
+        return new MockDomainEventPublisher();
     }
 }

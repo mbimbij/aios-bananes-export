@@ -1,7 +1,7 @@
 package com.example.aiosbananesexport;
 
 import com.example.aiosbananesexport.domain.DomainEvent;
-import com.example.aiosbananesexport.domain.DomainEventSender;
+import com.example.aiosbananesexport.domain.DomainEventPublisher;
 import com.example.aiosbananesexport.domain.Order;
 import com.example.aiosbananesexport.domain.OrderCreatedEvent;
 import com.example.aiosbananesexport.infra.in.CreateOrderRequestDto;
@@ -35,7 +35,7 @@ class ApplicationShould {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private DomainEventSender domainEventSender;
+    private DomainEventPublisher domainEventPublisher;
 
     @Test
     void load_context_with_no_problem() {
@@ -86,7 +86,7 @@ class ApplicationShould {
                 });
 
         // AND an "OrderCreatedEvent" is produced and sent
-        List<DomainEvent> domainEvents = ((MockDomainEventSender) domainEventSender).getDomainEvents();
+        List<DomainEvent> domainEvents = ((MockDomainEventPublisher) domainEventPublisher).getDomainEvents();
         assertThat(domainEvents).anySatisfy(domainEvent -> assertThat(domainEvent)
                 .usingRecursiveComparison()
                 .ignoringFields("id", "order.id")

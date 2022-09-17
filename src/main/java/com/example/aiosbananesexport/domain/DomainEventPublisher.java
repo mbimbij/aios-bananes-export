@@ -1,5 +1,5 @@
 package com.example.aiosbananesexport.domain;
 
-public interface DomainEventSender {
+public interface DomainEventPublisher {
     void send(DomainEvent event);
 }
