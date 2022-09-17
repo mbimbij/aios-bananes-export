@@ -1,4 +1,4 @@
-package com.example.aiosbananesexport;
+package com.example.aiosbananesexport.infra.out;
 
 import com.example.aiosbananesexport.domain.DomainEvent;
 import com.example.aiosbananesexport.domain.DomainEventPublisher;

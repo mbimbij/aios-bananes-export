@@ -2,6 +2,7 @@ package com.example.aiosbananesexport;
 
 import com.example.aiosbananesexport.domain.DomainEventPublisher;
 import com.example.aiosbananesexport.domain.OrderFactory;
+import com.example.aiosbananesexport.domain.OrderRepository;
 import com.example.aiosbananesexport.domain.PlaceOrder;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,8 +16,8 @@ public class Application {
     }
 
     @Bean
-    public PlaceOrder placeOrder(DomainEventPublisher domainEventPublisher, OrderFactory orderFactory) {
-        return new PlaceOrder(domainEventPublisher, orderFactory);
+    public PlaceOrder placeOrder(OrderFactory orderFactory, OrderRepository orderRepository, DomainEventPublisher domainEventPublisher) {
+        return new PlaceOrder(orderFactory, orderRepository, domainEventPublisher);
     }
 
     @Bean

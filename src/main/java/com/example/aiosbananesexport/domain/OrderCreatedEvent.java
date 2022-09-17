@@ -17,4 +17,8 @@ public class OrderCreatedEvent extends DomainEvent {
         super(id);
         this.order = order;
     }
+
+    public static OrderCreatedEvent from(Order order){
+        return new OrderCreatedEvent(DomainEvent.generateId(), order);
+    }
 }

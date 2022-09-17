@@ -6,12 +6,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PlaceOrder {
 
-    private final DomainEventPublisher domainEventPublisher;
     private final OrderFactory orderFactory;
+
+    private final OrderRepository orderRepository;
+    private final DomainEventPublisher domainEventPublisher;
 
     public Order placeOrder(CreateOrderRequestDto requestDto) {
         Order order = orderFactory.createOrder(requestDto);
-        domainEventPublisher.send(new OrderCreatedEvent("anyOrderCreatedEventid", order));
+        orderRepository.save(order);
+        domainEventPublisher.send(OrderCreatedEvent.from(order));
         return order;
     }
 

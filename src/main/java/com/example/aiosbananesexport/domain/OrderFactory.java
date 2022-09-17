@@ -4,10 +4,11 @@ import com.example.aiosbananesexport.infra.in.CreateOrderRequestDto;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 public class OrderFactory {
     Order createOrder(CreateOrderRequestDto requestDto) {
-        return new Order("anyOrderid",
+        return new Order(generateId(),
                          requestDto.getFirstName(),
                          requestDto.getLastName(),
                          requestDto.getAddress(),
@@ -18,6 +19,10 @@ public class OrderFactory {
                                         requestDto.getDeliveryDate(),
                                         DateTimeFormatter.ofPattern("dd-MM-yyyy")),
                          requestDto.getQuantityKg(),
-                                requestDto.getQuantityKg() * 2.5);
+                         requestDto.getQuantityKg() * 2.5);
+    }
+
+    public String generateId() {
+        return UUID.randomUUID().toString();
     }
 }
