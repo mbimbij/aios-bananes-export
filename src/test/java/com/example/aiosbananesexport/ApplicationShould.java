@@ -14,6 +14,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -71,7 +72,9 @@ class ApplicationShould {
         Order expectedOrder = new Order(orderId, firstName, lastName, address, postalCode, city, country, deliveryDate, quantityKg, expectedPrice);
         String anyOrderCreatedEventId = "anyOrderCreatedEventId";
         DomainEvent.setIdGenerator(() -> anyOrderCreatedEventId);
-        OrderCreatedEvent expectedOrderCreatedEvent = new OrderCreatedEvent(anyOrderCreatedEventId, expectedOrder);
+        ZonedDateTime eventDateTime = ZonedDateTime.now();
+        DomainEvent.setEventDateTimeSupplier(() -> eventDateTime);
+        OrderCreatedEvent expectedEvent = new OrderCreatedEvent(anyOrderCreatedEventId, DomainEvent.getEventDateTime(), expectedOrder);
 
         // WHEN
         WebTestClient.ResponseSpec responseSpec = webTestClient.post()
@@ -105,7 +108,7 @@ class ApplicationShould {
         List<DomainEvent> domainEvents = ((MockDomainEventPublisher) domainEventPublisher).getDomainEvents();
         assertThat(domainEvents).anySatisfy(domainEvent -> assertThat(domainEvent)
                 .usingRecursiveComparison()
-                .isEqualTo(expectedOrderCreatedEvent));
+                .isEqualTo(expectedEvent));
     }
 
 }
