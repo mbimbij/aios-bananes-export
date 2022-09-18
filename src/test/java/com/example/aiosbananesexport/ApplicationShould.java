@@ -12,7 +12,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.time.LocalDate;
@@ -28,37 +27,22 @@ import static org.mockito.Mockito.doReturn;
 )
 class ApplicationShould {
 
-    private final String firstName = "firstName";
-    private final String lastName = "lastName";
-    private final String address = "address";
-    private final int postalCode = 75019;
-    private final String city = "paris";
-    private final String country = "france";
-    private final LocalDate deliveryDate = LocalDate.now().plusWeeks(1);
-    private final String deliveryDateString = deliveryDate.format(DateTimeFormat.DATE_FORMATTER);
-    private final int quantityKg = 25;
     private final String fixedId = "fixedId";
     private final ZonedDateTime fixedTimestamp = ZonedDateTime.now();
     @Autowired
     private WebTestClient webTestClient;
-
-    @SpyBean
-    private OrderFactory orderFactory;
 
     @Autowired
     private InMemoryOrderRepository orderRepository;
 
     @Autowired
     private MockDomainEventPublisher domainEventPublisher;
-    private PlaceOrderRequestDto requestDto;
-    private Order order;
+
+    @Autowired
+    private OrderConfigurationProperties orderConfigurationProperties;
 
     @BeforeEach
     void setUp() {
-        requestDto = new PlaceOrderRequestDto(firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg);
-        doReturn(fixedId).when(orderFactory).generateId();
-        order = new Order(fixedId, firstName, lastName, address, postalCode, city, country, deliveryDate, quantityKg, 25,0, 10_000, 62.5);
-
         TimestampGenerator.useFixedClockAt(fixedTimestamp);
         IdGenerator.useFixedId(fixedId);
 
@@ -68,10 +52,11 @@ class ApplicationShould {
 
     @Test
     void create_an_order__in_nominal_case() {
-        // GIVEN expected outcomes
-        PlaceOrderResponseDto expectedResponseDto = new PlaceOrderResponseDto(fixedId, firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg, "62.50");
-
-        OrderCreatedEvent expectedEvent = new OrderCreatedEvent(fixedId, fixedTimestamp, order);
+        // GIVEN
+        PlaceOrderRequestDto requestDto = happyCaseOrderRequestDto();
+        PlaceOrderResponseDto expectedResponseDto = happyCaseOrderResponseDto();
+        Order expectedOrder = happyCaseOrder();
+        OrderCreatedEvent expectedEvent = new OrderCreatedEvent(fixedId, fixedTimestamp, expectedOrder);
 
         // WHEN performing the REST request
         WebTestClient.ResponseSpec responseSpec = webTestClient.post().uri("/order").bodyValue(requestDto).exchange();
@@ -83,7 +68,7 @@ class ApplicationShould {
                     .value(actualResponseDto -> assertThat(actualResponseDto).usingRecursiveComparison().isEqualTo(expectedResponseDto));
 
         // AND the order is saved to the repository
-        assertThat(orderRepository.getOrders()).anySatisfy(order -> assertThat(order).usingRecursiveComparison().isEqualTo(order));
+        assertThat(orderRepository.getOrders()).anySatisfy(order -> assertThat(order).usingRecursiveComparison().isEqualTo(expectedOrder));
 
         // AND an "OrderCreatedEvent" is published
         List<DomainEvent> domainEvents = domainEventPublisher.getDomainEvents();
@@ -93,15 +78,13 @@ class ApplicationShould {
     @Test
     void return_an_error__when_delivery_date_too_early() {
         // GIVEN
-        LocalDate earlyDeliveryDate = deliveryDate.minusDays(1);
+        LocalDate earlyDeliveryDate = LocalDate.now().plusWeeks(1).minusDays(1);
         String earlyDeliveryDateString = earlyDeliveryDate.format(DateTimeFormat.DATE_FORMATTER);
-        PlaceOrderRequestDto requestDto = new PlaceOrderRequestDto(firstName, lastName, address, postalCode, city, country, earlyDeliveryDateString, quantityKg);
 
-
-        Order expectedOrderInError = order.withDeliveryDate(earlyDeliveryDate);
+        PlaceOrderRequestDto requestDto = new PlaceOrderRequestDto("firstName", "lastName", "address", 75019, "paris", "france", earlyDeliveryDateString, 25);
+        Order expectedOrderInError = happyCaseOrder().withDeliveryDate(earlyDeliveryDate);
         OrderDeliveryTooEarlyException exception = new OrderDeliveryTooEarlyException(expectedOrderInError);
         BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(exception.getMessage(), exception, fixedTimestamp);
-
         OrderFailedDeliveryDateTooEarlyEvent expectedEvent = new OrderFailedDeliveryDateTooEarlyEvent(fixedId, fixedTimestamp, expectedOrderInError);
 
         // WHEN performing the REST request
@@ -122,10 +105,10 @@ class ApplicationShould {
 
     @ParameterizedTest
     @ValueSource(ints = {-1, 0, 10_001})
-    void return_an_error__when_quantity_not_in_allowed_range(int quantityKg) {
+    void return_an_error__when_quantity_not_in_allowed_range(int wrongQuantityKg) {
         // GIVEN
-        PlaceOrderRequestDto requestDto = this.requestDto.withQuantityKg(quantityKg);
-        Order expectedOrderInError = order.withQuantityKg(quantityKg);
+        PlaceOrderRequestDto requestDto = happyCaseOrderRequestDto().withQuantityKg(wrongQuantityKg);
+        Order expectedOrderInError = happyCaseOrder().withQuantityKg(wrongQuantityKg);
         OrderQuantityNotInRangeException expectedException = new OrderQuantityNotInRangeException(expectedOrderInError);
         BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(expectedException.getMessage(), expectedException, fixedTimestamp);
 
@@ -142,9 +125,9 @@ class ApplicationShould {
     @Test
     void return_an_error__when_quantity_not_multiple_of_allowed_hincrement() {
         // GIVEN
-        int quantityKg = 30;
-        PlaceOrderRequestDto requestDto = this.requestDto.withQuantityKg(quantityKg);
-        Order expectedOrderInError = order.withQuantityKg(quantityKg);
+        int wrongQuantityKg = 30;
+        PlaceOrderRequestDto requestDto = happyCaseOrderRequestDto().withQuantityKg(wrongQuantityKg);
+        Order expectedOrderInError = happyCaseOrder().withQuantityKg(wrongQuantityKg);
         OrderQuantityNotMultipleOfIncrementException expectedException = new OrderQuantityNotMultipleOfIncrementException(expectedOrderInError);
         BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(expectedException.getMessage(), expectedException, fixedTimestamp);
 
@@ -156,5 +139,47 @@ class ApplicationShould {
                     .isEqualTo(409)
                     .expectBody(BusinessErrorDto.class)
                     .value(actualResponseDto -> assertThat(actualResponseDto).usingRecursiveComparison().isEqualTo(BusinessErrorDto));
+    }
+
+    private PlaceOrderResponseDto happyCaseOrderResponseDto() {
+        return new PlaceOrderResponseDto(fixedId,
+                                         "firstName",
+                                         "lastName",
+                                         "address",
+                                         75019,
+                                         "paris",
+                                         "france",
+                                         LocalDate.now().plusWeeks(1).format(DateTimeFormat.DATE_FORMATTER),
+                                         25,
+                                         "62.50");
+    }
+
+    private PlaceOrderRequestDto happyCaseOrderRequestDto() {
+        return new PlaceOrderRequestDto("firstName",
+                                        "lastName",
+                                        "address",
+                                        75019,
+                                        "paris",
+                                        "france",
+                                        LocalDate.now().plusWeeks(1).format(DateTimeFormat.DATE_FORMATTER),
+                                        25);
+    }
+
+    private Order happyCaseOrder() {
+        double expectedPrice = 62.5;
+        return new Order(fixedId,
+                         "firstName",
+                         "lastName",
+                         "address",
+                         75019,
+                         "paris",
+                         "france",
+                         LocalDate.now().plusWeeks(1),
+                         orderConfigurationProperties.getDeliveryMinDelayDays(),
+                         25,
+                         orderConfigurationProperties.getIncrementQuantityKg(),
+                         orderConfigurationProperties.getMinQuantityKg(),
+                         orderConfigurationProperties.getMaxQuantityKg(),
+                         expectedPrice);
     }
 }

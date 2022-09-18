@@ -18,6 +18,7 @@ public class Order {
     String city;
     String country;
     LocalDate deliveryDate;
+    int deliveryMinDelayDays;
     int quantityKg;
     private final int orderIncrementQuantityKg;
     private final int orderMinQuantityKg;
@@ -45,7 +46,7 @@ public class Order {
     }
 
     private boolean deliveryDateTooEarly() {
-        return deliveryDate.isBefore(LocalDate.now().plusWeeks(1));
+        return deliveryDate.isBefore(LocalDate.now().plusDays(deliveryMinDelayDays));
     }
 
 

@@ -1,6 +1,6 @@
 package com.example.aiosbananesexport.domain;
 
-import java.util.UUID;
+import com.example.aiosbananesexport.utils.IdGenerator;
 
 public class OrderFactory {
 
@@ -8,16 +8,18 @@ public class OrderFactory {
     private final int orderIncrementQuantityKg;
     private final int orderMinQuantityKg;
     private final int orderMaxQuantityKg;
+    private final int deliveryMinDelayDays;
 
-    public OrderFactory(double pricePerKg, int orderMinQuantityKg, int orderMaxQuantityKg, int orderIncrementQuantityKg) {
+    public OrderFactory(double pricePerKg, int orderMinQuantityKg, int orderMaxQuantityKg, int orderIncrementQuantityKg, int deliveryMinDelayDays) {
         this.pricePerKg = pricePerKg;
         this.orderMinQuantityKg = orderMinQuantityKg;
         this.orderMaxQuantityKg = orderMaxQuantityKg;
         this.orderIncrementQuantityKg = orderIncrementQuantityKg;
+        this.deliveryMinDelayDays = deliveryMinDelayDays;
     }
 
     Order createOrder(PlaceOrderCommand placeOrderCommand) {
-        return new Order(generateId(),
+        return new Order(IdGenerator.newId(),
                          placeOrderCommand.getFirstName(),
                          placeOrderCommand.getLastName(),
                          placeOrderCommand.getAddress(),
@@ -25,14 +27,11 @@ public class OrderFactory {
                          placeOrderCommand.getCity(),
                          placeOrderCommand.getCountry(),
                          placeOrderCommand.getDeliveryDate(),
+                         deliveryMinDelayDays,
                          placeOrderCommand.getQuantityKg(),
                          orderIncrementQuantityKg,
                          orderMinQuantityKg,
                          orderMaxQuantityKg,
                          pricePerKg * placeOrderCommand.getQuantityKg());
-    }
-
-    public String generateId() {
-        return UUID.randomUUID().toString();
     }
 }

@@ -26,7 +26,7 @@ public class Application {
 
     @Bean
     public OrderFactory orderFactory(OrderConfigurationProperties configProps) {
-        return new OrderFactory(2.5, 0, 10_000, 25);
+        return new OrderFactory(2.5, 0, 10_000, 25, 7);
     }
 
 }

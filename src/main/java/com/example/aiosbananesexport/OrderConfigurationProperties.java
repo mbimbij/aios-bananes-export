@@ -10,4 +10,5 @@ public class OrderConfigurationProperties {
     private int minQuantityKg;
     private int maxQuantityKg;
     private int incrementQuantityKg;
+    private int deliveryMinDelayDays;
 }
