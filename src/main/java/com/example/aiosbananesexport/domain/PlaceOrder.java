@@ -13,7 +13,7 @@ public class PlaceOrder {
     private final OrderRepository orderRepository;
     private final DomainEventPublisher domainEventPublisher;
 
-    public Order handle(PlaceOrderCommand command) throws OrderDeliveryTooEarlyException, OrderQuantityNotInRangeException {
+    public Order handle(PlaceOrderCommand command) throws OrderDeliveryTooEarlyException, OrderQuantityNotInRangeException, OrderQuantityNotMultipleOfIncrementException {
 
         Order order = orderFactory.createOrder(command);
         try {
@@ -24,6 +24,11 @@ public class PlaceOrder {
             log.error(e.getMessage(), e);
             throw e;
         } catch (OrderQuantityNotInRangeException e) {
+            OrderFailedQuantityNotInRangeEvent deliveryDateTooEarlyEvent = new OrderFailedQuantityNotInRangeEvent(order);
+            domainEventPublisher.send(deliveryDateTooEarlyEvent);
+            log.error(e.getMessage(), e);
+            throw e;
+        } catch (OrderQuantityNotMultipleOfIncrementException e) {
             OrderFailedQuantityNotInRangeEvent deliveryDateTooEarlyEvent = new OrderFailedQuantityNotInRangeEvent(order);
             domainEventPublisher.send(deliveryDateTooEarlyEvent);
             log.error(e.getMessage(), e);

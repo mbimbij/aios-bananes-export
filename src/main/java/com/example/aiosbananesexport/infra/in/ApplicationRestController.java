@@ -15,7 +15,7 @@ public class ApplicationRestController {
 
     @PostMapping(value = "/order")
     @ResponseStatus(code = HttpStatus.CREATED)
-    public Mono<PlaceOrderResponseDto> createOrder(@RequestBody PlaceOrderRequestDto requestDto) throws OrderDeliveryTooEarlyException, OrderQuantityNotInRangeException {
+    public Mono<PlaceOrderResponseDto> createOrder(@RequestBody PlaceOrderRequestDto requestDto) throws OrderDeliveryTooEarlyException, OrderQuantityNotInRangeException, OrderQuantityNotMultipleOfIncrementException {
         Order order = placeOrder.handle(requestDto.toDomainCommand());
         PlaceOrderResponseDto responseDto = new PlaceOrderResponseDto(order);
         return Mono.just(responseDto);
@@ -30,6 +30,12 @@ public class ApplicationRestController {
     @ExceptionHandler({OrderQuantityNotInRangeException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public Mono<BusinessErrorDto> handleQuantityNotInRangeException(OrderQuantityNotInRangeException exception) {
+        return handleBusinessExceptionInternal(exception);
+    }
+
+    @ExceptionHandler({OrderQuantityNotMultipleOfIncrementException.class})
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Mono<BusinessErrorDto> handleQuantityNotInRangeException(OrderQuantityNotMultipleOfIncrementException exception) {
         return handleBusinessExceptionInternal(exception);
     }
 

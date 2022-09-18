@@ -141,4 +141,23 @@ class ApplicationShould {
                     .expectBody(BusinessErrorDto.class)
                     .value(actualResponseDto -> assertThat(actualResponseDto).usingRecursiveComparison().isEqualTo(BusinessErrorDto));
     }
+
+    @Test
+    void return_an_error__when_quantity_not_multiple_of_allowed_hincrement() {
+        // GIVEN
+        int quantityKg = 30;
+        PlaceOrderRequestDto requestDto = this.requestDto.withQuantityKg(quantityKg);
+        Order expectedOrderInError = order.withQuantityKg(quantityKg);
+        OrderQuantityNotMultipleOfIncrementException expectedException = new OrderQuantityNotMultipleOfIncrementException(expectedOrderInError);
+        BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(expectedException.getMessage(), expectedException, fixedTimestamp);
+
+        // WHEN performing the REST request
+        WebTestClient.ResponseSpec responseSpec = webTestClient.post().uri("/order").bodyValue(requestDto).exchange();
+
+        // THEN the REST response is http 409 with error response
+        responseSpec.expectStatus()
+                    .isEqualTo(409)
+                    .expectBody(BusinessErrorDto.class)
+                    .value(actualResponseDto -> assertThat(actualResponseDto).usingRecursiveComparison().isEqualTo(BusinessErrorDto));
+    }
 }

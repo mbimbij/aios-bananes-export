@@ -21,13 +21,24 @@ public class Order {
     int quantityKg;
     double price;
 
-    public void validate() throws OrderDeliveryTooEarlyException, OrderQuantityNotInRangeException {
+    public void validate() throws OrderDeliveryTooEarlyException, OrderQuantityNotInRangeException, OrderQuantityNotMultipleOfIncrementException {
         if (deliveryDateTooEarly()) {
             throw new OrderDeliveryTooEarlyException(this);
         }
-        if (quantityKg <= 0 || quantityKg > 10000) {
+        if (!quantityInAllowedRange()) {
             throw new OrderQuantityNotInRangeException(this);
         }
+        if (!quantityMultipleOfAllowedIncrement()) {
+            throw new OrderQuantityNotMultipleOfIncrementException(this);
+        }
+    }
+
+    private boolean quantityMultipleOfAllowedIncrement() {
+        return quantityKg % 25==0;
+    }
+
+    private boolean quantityInAllowedRange() {
+        return quantityKg > 0 && quantityKg <= 10000;
     }
 
     private boolean deliveryDateTooEarly() {
