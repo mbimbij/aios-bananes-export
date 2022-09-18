@@ -1,14 +1,11 @@
 package com.example.aiosbananesexport.infra.in;
 
-import com.example.aiosbananesexport.domain.Order;
-import com.example.aiosbananesexport.domain.OrderDeliveryTooEarlyException;
-import com.example.aiosbananesexport.domain.PlaceOrder;
+import com.example.aiosbananesexport.domain.*;
+import com.example.aiosbananesexport.utils.TimestampGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
-
-import java.time.ZonedDateTime;
 
 @RestController
 public class ApplicationRestController {
@@ -18,7 +15,7 @@ public class ApplicationRestController {
 
     @PostMapping(value = "/order")
     @ResponseStatus(code = HttpStatus.CREATED)
-    public Mono<CreateOrderResponseDto> createOrder(@RequestBody CreateOrderRequestDto requestDto) throws OrderDeliveryTooEarlyException {
+    public Mono<CreateOrderResponseDto> createOrder(@RequestBody CreateOrderRequestDto requestDto) throws OrderDeliveryTooEarlyException, OrderQuantityNotInRangeException {
         Order order = placeOrder.handle(requestDto);
         CreateOrderResponseDto responseDto = new CreateOrderResponseDto(order);
         return Mono.just(responseDto);
@@ -27,12 +24,17 @@ public class ApplicationRestController {
     @ExceptionHandler({OrderDeliveryTooEarlyException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public Mono<BusinessErrorDto> handleOrderDeliveryTooEarlyException(OrderDeliveryTooEarlyException exception) {
-        BusinessErrorDto businessErrorDto = new BusinessErrorDto(exception.getMessage(), exception, currentTimestamp());
+        return handleBusinessExceptionInternal(exception);
+    }
+
+    @ExceptionHandler({OrderQuantityNotInRangeException.class})
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Mono<BusinessErrorDto> handleQuantityNotInRangeException(OrderQuantityNotInRangeException exception) {
+        return handleBusinessExceptionInternal(exception);
+    }
+
+    private Mono<BusinessErrorDto> handleBusinessExceptionInternal(BusinessException exception) {
+        BusinessErrorDto businessErrorDto = new BusinessErrorDto(exception.getMessage(), exception, TimestampGenerator.now());
         return Mono.just(businessErrorDto);
     }
-
-    public ZonedDateTime currentTimestamp() {
-        return ZonedDateTime.now();
-    }
-
 }

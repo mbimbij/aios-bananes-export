@@ -8,6 +8,9 @@ import com.example.aiosbananesexport.utils.IdGenerator;
 import com.example.aiosbananesexport.utils.TimestampGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -98,12 +101,10 @@ class ApplicationShould {
         String earlyDeliveryDateString = earlyDeliveryDate.format(DateTimeFormat.DATE_FORMATTER);
         CreateOrderRequestDto requestDto = new CreateOrderRequestDto(firstName, lastName, address, postalCode, city, country, earlyDeliveryDateString, quantityKg);
 
-        ZonedDateTime exceptionTimestamp = ZonedDateTime.now();
-        doReturn(exceptionTimestamp).when(applicationRestController).currentTimestamp();
 
         Order expectedOrderInError = order.withDeliveryDate(earlyDeliveryDate);
         OrderDeliveryTooEarlyException exception = new OrderDeliveryTooEarlyException(expectedOrderInError);
-        BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(exception.getMessage(), exception, exceptionTimestamp);
+        BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(exception.getMessage(), exception, fixedTimestamp);
 
         OrderFailedDeliveryDateTooEarlyEvent expectedEvent = new OrderFailedDeliveryDateTooEarlyEvent(fixedId, fixedTimestamp, expectedOrderInError);
 
@@ -123,26 +124,22 @@ class ApplicationShould {
                 .allSatisfy(domainEvent -> assertThat(domainEvent).usingRecursiveComparison().isEqualTo(expectedEvent));
     }
 
-//    @ParameterizedTest
-//    @ValueSource(ints = {-1,0,30,10_001})
-//    void return_an_error__when_quantity_not_in_allowed_range(int quantityKg) {
-//        // GIVEN
-//        CreateOrderRequestDto requestDto = this.requestDto.withQuantityKg(quantityKg);
-//
-//        ZonedDateTime exceptionTimestamp = ZonedDateTime.now();
-//        Mockito.doReturn(exceptionTimestamp).when(applicationRestController).currentTimestamp();
-//
-//        Order expectedOrderInError = order.withQuantityKg(quantityKg);
-//        OrderDeliveryTooEarlyException exception = new OrderDeliveryTooEarlyException(expectedOrderInError);
-//        BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(exception.getMessage(), exception, exceptionTimestamp);
-//
-//        // WHEN performing the REST request
-//        WebTestClient.ResponseSpec responseSpec = webTestClient.post().uri("/order").bodyValue(requestDto).exchange();
-//
-//        // THEN the REST response is http 409 with error response
-//        responseSpec.expectStatus()
-//                    .isEqualTo(409)
-//                    .expectBody(BusinessErrorDto.class)
-//                    .value(actualResponseDto -> assertThat(actualResponseDto).usingRecursiveComparison().isEqualTo(BusinessErrorDto));
-//    }
+    @ParameterizedTest
+    @ValueSource(ints = {-1, 0, 10_001})
+    void return_an_error__when_quantity_not_in_allowed_range(int quantityKg) {
+        // GIVEN
+        CreateOrderRequestDto requestDto = this.requestDto.withQuantityKg(quantityKg);
+        Order expectedOrderInError = order.withQuantityKg(quantityKg);
+        OrderQuantityNotInRangeException expectedException = new OrderQuantityNotInRangeException(expectedOrderInError);
+        BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(expectedException.getMessage(), expectedException, fixedTimestamp);
+
+        // WHEN performing the REST request
+        WebTestClient.ResponseSpec responseSpec = webTestClient.post().uri("/order").bodyValue(requestDto).exchange();
+
+        // THEN the REST response is http 409 with error response
+        responseSpec.expectStatus()
+                    .isEqualTo(409)
+                    .expectBody(BusinessErrorDto.class)
+                    .value(actualResponseDto -> assertThat(actualResponseDto).usingRecursiveComparison().isEqualTo(BusinessErrorDto));
+    }
 }

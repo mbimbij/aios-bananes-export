@@ -21,9 +21,16 @@ public class Order {
     int quantityKg;
     double price;
 
-    public void validate() throws OrderDeliveryTooEarlyException {
-        if (deliveryDate.isBefore(LocalDate.now().plusWeeks(1))) {
+    public void validate() throws OrderDeliveryTooEarlyException, OrderQuantityNotInRangeException {
+        if (deliveryDateTooEarly()) {
             throw new OrderDeliveryTooEarlyException(this);
         }
+        if (quantityKg <= 0 || quantityKg > 10000) {
+            throw new OrderQuantityNotInRangeException(this);
+        }
+    }
+
+    private boolean deliveryDateTooEarly() {
+        return deliveryDate.isBefore(LocalDate.now().plusWeeks(1));
     }
 }
