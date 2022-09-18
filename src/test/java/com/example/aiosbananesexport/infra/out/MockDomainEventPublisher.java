@@ -17,4 +17,8 @@ public class MockDomainEventPublisher implements DomainEventPublisher {
     public List<DomainEvent> getDomainEvents() {
         return domainEvents;
     }
+
+    public void clear() {
+        domainEvents.clear();
+    }
 }

@@ -16,12 +16,14 @@ public class Application {
     }
 
     @Bean
-    public PlaceOrder placeOrder(OrderFactory orderFactory, OrderRepository orderRepository, DomainEventPublisher domainEventPublisher) {
+    public PlaceOrder placeOrder(OrderFactory orderFactory,
+                                 OrderRepository orderRepository,
+                                 DomainEventPublisher domainEventPublisher) {
         return new PlaceOrder(orderFactory, orderRepository, domainEventPublisher);
     }
 
     @Bean
-    public OrderFactory orderFactory(){
+    public OrderFactory orderFactory() {
         return new OrderFactory();
     }
 

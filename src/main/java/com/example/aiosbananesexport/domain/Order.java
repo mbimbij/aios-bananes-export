@@ -1,7 +1,6 @@
 package com.example.aiosbananesexport.domain;
 
 import lombok.*;
-import lombok.experimental.Wither;
 
 import java.time.LocalDate;
 

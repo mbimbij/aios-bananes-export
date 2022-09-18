@@ -18,11 +18,15 @@ public class PlaceOrder {
         try {
             order.validate();
         } catch (OrderDeliveryTooEarlyException e) {
+            OrderFailedDeliveryDateTooEarlyEvent deliveryDateTooEarlyEvent = new OrderFailedDeliveryDateTooEarlyEvent(order);
+            domainEventPublisher.send(deliveryDateTooEarlyEvent);
             log.error(e.getMessage(), e);
             throw e;
         }
         orderRepository.save(order);
-        domainEventPublisher.send(OrderCreatedEvent.from(order));
+        OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent(order);
+        domainEventPublisher.send(orderCreatedEvent);
+        log.info("request {} handled successfully", requestDto);
         return order;
     }
 

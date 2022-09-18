@@ -4,9 +4,10 @@ import com.example.aiosbananesexport.domain.*;
 import com.example.aiosbananesexport.infra.in.*;
 import com.example.aiosbananesexport.infra.out.InMemoryOrderRepository;
 import com.example.aiosbananesexport.infra.out.MockDomainEventPublisher;
+import com.example.aiosbananesexport.utils.IdGenerator;
+import com.example.aiosbananesexport.utils.TimestampGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -17,6 +18,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -33,9 +35,8 @@ class ApplicationShould {
     private final LocalDate deliveryDate = LocalDate.now().plusWeeks(1);
     private final String deliveryDateString = deliveryDate.format(DateTimeFormat.DATE_FORMATTER);
     private final int quantityKg = 25;
-    private final String orderId = "someOrderId";
-    private final String anyOrderCreatedEventId = "anyOrderCreatedEventId";
-    private final ZonedDateTime eventDateTime = ZonedDateTime.now();
+    private final String fixedId = "fixedId";
+    private final ZonedDateTime fixedTimestamp = ZonedDateTime.now();
     @Autowired
     private WebTestClient webTestClient;
 
@@ -46,27 +47,32 @@ class ApplicationShould {
     private ApplicationRestController applicationRestController;
 
     @Autowired
-    private OrderRepository orderRepository;
+    private InMemoryOrderRepository orderRepository;
 
     @Autowired
-    private DomainEventPublisher domainEventPublisher;
+    private MockDomainEventPublisher domainEventPublisher;
     private CreateOrderRequestDto requestDto;
     private Order order;
 
     @BeforeEach
     void setUp() {
         requestDto = new CreateOrderRequestDto(firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg);
-        Mockito.doReturn(orderId).when(orderFactory).generateId();
-        DomainEvent.setIdGenerator(() -> anyOrderCreatedEventId);
-        DomainEvent.setEventDateTimeSupplier(() -> eventDateTime);
-        order = new Order(orderId, firstName, lastName, address, postalCode, city, country, deliveryDate, quantityKg, 62.5);
+        doReturn(fixedId).when(orderFactory).generateId();
+        order = new Order(fixedId, firstName, lastName, address, postalCode, city, country, deliveryDate, quantityKg, 62.5);
+
+        TimestampGenerator.useFixedClockAt(fixedTimestamp);
+        IdGenerator.useFixedId(fixedId);
+
+        domainEventPublisher.clear();
+        orderRepository.clear();
     }
 
     @Test
     void create_an_order__in_nominal_case() {
         // GIVEN expected outcomes
-        CreateOrderResponseDto expectedResponseDto = new CreateOrderResponseDto(orderId, firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg, "62.50");
-        OrderCreatedEvent expectedEvent = new OrderCreatedEvent(anyOrderCreatedEventId, DomainEvent.getEventDateTime(), order);
+        CreateOrderResponseDto expectedResponseDto = new CreateOrderResponseDto(fixedId, firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg, "62.50");
+
+        OrderCreatedEvent expectedEvent = new OrderCreatedEvent(fixedId, fixedTimestamp, order);
 
         // WHEN performing the REST request
         WebTestClient.ResponseSpec responseSpec = webTestClient.post().uri("/order").bodyValue(requestDto).exchange();
@@ -78,27 +84,28 @@ class ApplicationShould {
                     .value(actualResponseDto -> assertThat(actualResponseDto).usingRecursiveComparison().isEqualTo(expectedResponseDto));
 
         // AND the order is saved to the repository
-        assertThat(((InMemoryOrderRepository) orderRepository).getOrders()).anySatisfy(order -> assertThat(order).usingRecursiveComparison().isEqualTo(order));
+        assertThat(orderRepository.getOrders()).anySatisfy(order -> assertThat(order).usingRecursiveComparison().isEqualTo(order));
 
         // AND an "OrderCreatedEvent" is published
-        List<DomainEvent> domainEvents = ((MockDomainEventPublisher) domainEventPublisher).getDomainEvents();
+        List<DomainEvent> domainEvents = domainEventPublisher.getDomainEvents();
         assertThat(domainEvents).anySatisfy(domainEvent -> assertThat(domainEvent).usingRecursiveComparison().isEqualTo(expectedEvent));
     }
-
 
     @Test
     void return_an_error__when_delivery_date_too_early() {
         // GIVEN
-        LocalDate errorDeliveryDate = deliveryDate.minusDays(1);
-        String deliveryDateString = errorDeliveryDate.format(DateTimeFormat.DATE_FORMATTER);
-        CreateOrderRequestDto requestDto = new CreateOrderRequestDto(firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg);
-        Order errorOrder = order.withDeliveryDate(errorDeliveryDate);
-        OrderDeliveryTooEarlyException exception = new OrderDeliveryTooEarlyException(errorOrder);
+        LocalDate earlyDeliveryDate = deliveryDate.minusDays(1);
+        String earlyDeliveryDateString = earlyDeliveryDate.format(DateTimeFormat.DATE_FORMATTER);
+        CreateOrderRequestDto requestDto = new CreateOrderRequestDto(firstName, lastName, address, postalCode, city, country, earlyDeliveryDateString, quantityKg);
+
         ZonedDateTime exceptionTimestamp = ZonedDateTime.now();
-        Mockito.doReturn(exceptionTimestamp)
-               .when(applicationRestController)
-               .currentTimestamp();
+        doReturn(exceptionTimestamp).when(applicationRestController).currentTimestamp();
+
+        Order expectedOrderInError = order.withDeliveryDate(earlyDeliveryDate);
+        OrderDeliveryTooEarlyException exception = new OrderDeliveryTooEarlyException(expectedOrderInError);
         BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(exception.getMessage(), exception, exceptionTimestamp);
+
+        OrderFailedDeliveryDateTooEarlyEvent expectedEvent = new OrderFailedDeliveryDateTooEarlyEvent(fixedId, fixedTimestamp, expectedOrderInError);
 
         // WHEN performing the REST request
         WebTestClient.ResponseSpec responseSpec = webTestClient.post().uri("/order").bodyValue(requestDto).exchange();
@@ -108,5 +115,34 @@ class ApplicationShould {
                     .isEqualTo(409)
                     .expectBody(BusinessErrorDto.class)
                     .value(actualResponseDto -> assertThat(actualResponseDto).usingRecursiveComparison().isEqualTo(BusinessErrorDto));
+
+        // AND an error event is published
+        assertThat(domainEventPublisher.getDomainEvents())
+                .filteredOn(event -> event instanceof OrderFailedDeliveryDateTooEarlyEvent)
+                .hasSize(1)
+                .allSatisfy(domainEvent -> assertThat(domainEvent).usingRecursiveComparison().isEqualTo(expectedEvent));
     }
+
+//    @ParameterizedTest
+//    @ValueSource(ints = {-1,0,30,10_001})
+//    void return_an_error__when_quantity_not_in_allowed_range(int quantityKg) {
+//        // GIVEN
+//        CreateOrderRequestDto requestDto = this.requestDto.withQuantityKg(quantityKg);
+//
+//        ZonedDateTime exceptionTimestamp = ZonedDateTime.now();
+//        Mockito.doReturn(exceptionTimestamp).when(applicationRestController).currentTimestamp();
+//
+//        Order expectedOrderInError = order.withQuantityKg(quantityKg);
+//        OrderDeliveryTooEarlyException exception = new OrderDeliveryTooEarlyException(expectedOrderInError);
+//        BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(exception.getMessage(), exception, exceptionTimestamp);
+//
+//        // WHEN performing the REST request
+//        WebTestClient.ResponseSpec responseSpec = webTestClient.post().uri("/order").bodyValue(requestDto).exchange();
+//
+//        // THEN the REST response is http 409 with error response
+//        responseSpec.expectStatus()
+//                    .isEqualTo(409)
+//                    .expectBody(BusinessErrorDto.class)
+//                    .value(actualResponseDto -> assertThat(actualResponseDto).usingRecursiveComparison().isEqualTo(BusinessErrorDto));
+//    }
 }

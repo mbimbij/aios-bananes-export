@@ -10,8 +10,13 @@ import java.util.List;
 @Getter
 public class InMemoryOrderRepository implements OrderRepository {
     List<Order> orders = new ArrayList<>();
+
     @Override
     public void save(Order order) {
         orders.add(order);
+    }
+
+    public void clear() {
+        orders.clear();
     }
 }
