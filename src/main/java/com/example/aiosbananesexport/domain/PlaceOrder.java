@@ -1,6 +1,6 @@
 package com.example.aiosbananesexport.domain;
 
-import com.example.aiosbananesexport.infra.in.CreateOrderRequestDto;
+import com.example.aiosbananesexport.infra.in.PlaceOrderRequestDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,8 +13,9 @@ public class PlaceOrder {
     private final OrderRepository orderRepository;
     private final DomainEventPublisher domainEventPublisher;
 
-    public Order handle(CreateOrderRequestDto requestDto) throws OrderDeliveryTooEarlyException, OrderQuantityNotInRangeException {
-        Order order = orderFactory.createOrder(requestDto);
+    public Order handle(PlaceOrderCommand command) throws OrderDeliveryTooEarlyException, OrderQuantityNotInRangeException {
+
+        Order order = orderFactory.createOrder(command);
         try {
             order.validate();
         } catch (OrderDeliveryTooEarlyException e) {
@@ -32,7 +33,7 @@ public class PlaceOrder {
         orderRepository.save(order);
         OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent(order);
         domainEventPublisher.send(orderCreatedEvent);
-        log.info("request {} handled successfully", requestDto);
+        log.info("request {} handled successfully", command);
         return order;
     }
 

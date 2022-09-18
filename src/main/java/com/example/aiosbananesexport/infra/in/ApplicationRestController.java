@@ -15,9 +15,9 @@ public class ApplicationRestController {
 
     @PostMapping(value = "/order")
     @ResponseStatus(code = HttpStatus.CREATED)
-    public Mono<CreateOrderResponseDto> createOrder(@RequestBody CreateOrderRequestDto requestDto) throws OrderDeliveryTooEarlyException, OrderQuantityNotInRangeException {
-        Order order = placeOrder.handle(requestDto);
-        CreateOrderResponseDto responseDto = new CreateOrderResponseDto(order);
+    public Mono<PlaceOrderResponseDto> createOrder(@RequestBody PlaceOrderRequestDto requestDto) throws OrderDeliveryTooEarlyException, OrderQuantityNotInRangeException {
+        Order order = placeOrder.handle(requestDto.toDomainCommand());
+        PlaceOrderResponseDto responseDto = new PlaceOrderResponseDto(order);
         return Mono.just(responseDto);
     }
 

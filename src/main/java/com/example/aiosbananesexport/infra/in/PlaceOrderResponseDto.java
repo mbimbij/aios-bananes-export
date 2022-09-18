@@ -6,7 +6,7 @@ import lombok.Value;
 
 @Value
 @AllArgsConstructor
-public class CreateOrderResponseDto {
+public class PlaceOrderResponseDto {
     String id;
     String firstName;
     String lastName;
@@ -18,7 +18,7 @@ public class CreateOrderResponseDto {
     int quantityKg;
     String price;
 
-    public CreateOrderResponseDto(Order order) {
+    public PlaceOrderResponseDto(Order order) {
         this(order.getId(),
              order.getFirstName(),
              order.getLastName(),

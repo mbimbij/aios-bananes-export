@@ -10,7 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -54,12 +53,12 @@ class ApplicationShould {
 
     @Autowired
     private MockDomainEventPublisher domainEventPublisher;
-    private CreateOrderRequestDto requestDto;
+    private PlaceOrderRequestDto requestDto;
     private Order order;
 
     @BeforeEach
     void setUp() {
-        requestDto = new CreateOrderRequestDto(firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg);
+        requestDto = new PlaceOrderRequestDto(firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg);
         doReturn(fixedId).when(orderFactory).generateId();
         order = new Order(fixedId, firstName, lastName, address, postalCode, city, country, deliveryDate, quantityKg, 62.5);
 
@@ -73,7 +72,7 @@ class ApplicationShould {
     @Test
     void create_an_order__in_nominal_case() {
         // GIVEN expected outcomes
-        CreateOrderResponseDto expectedResponseDto = new CreateOrderResponseDto(fixedId, firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg, "62.50");
+        PlaceOrderResponseDto expectedResponseDto = new PlaceOrderResponseDto(fixedId, firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg, "62.50");
 
         OrderCreatedEvent expectedEvent = new OrderCreatedEvent(fixedId, fixedTimestamp, order);
 
@@ -83,7 +82,7 @@ class ApplicationShould {
         // THEN the REST response is correct
         responseSpec.expectStatus()
                     .isCreated()
-                    .expectBody(CreateOrderResponseDto.class)
+                    .expectBody(PlaceOrderResponseDto.class)
                     .value(actualResponseDto -> assertThat(actualResponseDto).usingRecursiveComparison().isEqualTo(expectedResponseDto));
 
         // AND the order is saved to the repository
@@ -99,7 +98,7 @@ class ApplicationShould {
         // GIVEN
         LocalDate earlyDeliveryDate = deliveryDate.minusDays(1);
         String earlyDeliveryDateString = earlyDeliveryDate.format(DateTimeFormat.DATE_FORMATTER);
-        CreateOrderRequestDto requestDto = new CreateOrderRequestDto(firstName, lastName, address, postalCode, city, country, earlyDeliveryDateString, quantityKg);
+        PlaceOrderRequestDto requestDto = new PlaceOrderRequestDto(firstName, lastName, address, postalCode, city, country, earlyDeliveryDateString, quantityKg);
 
 
         Order expectedOrderInError = order.withDeliveryDate(earlyDeliveryDate);
@@ -128,7 +127,7 @@ class ApplicationShould {
     @ValueSource(ints = {-1, 0, 10_001})
     void return_an_error__when_quantity_not_in_allowed_range(int quantityKg) {
         // GIVEN
-        CreateOrderRequestDto requestDto = this.requestDto.withQuantityKg(quantityKg);
+        PlaceOrderRequestDto requestDto = this.requestDto.withQuantityKg(quantityKg);
         Order expectedOrderInError = order.withQuantityKg(quantityKg);
         OrderQuantityNotInRangeException expectedException = new OrderQuantityNotInRangeException(expectedOrderInError);
         BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(expectedException.getMessage(), expectedException, fixedTimestamp);
