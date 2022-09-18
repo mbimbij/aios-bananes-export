@@ -6,9 +6,11 @@ import com.example.aiosbananesexport.domain.OrderRepository;
 import com.example.aiosbananesexport.domain.PlaceOrder;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
+@ConfigurationPropertiesScan
 public class Application {
 
     public static void main(String[] args) {
@@ -23,8 +25,8 @@ public class Application {
     }
 
     @Bean
-    public OrderFactory orderFactory() {
-        return new OrderFactory();
+    public OrderFactory orderFactory(OrderConfigurationProperties configProps) {
+        return new OrderFactory(2.5, 0, 10_000, 25);
     }
 
 }

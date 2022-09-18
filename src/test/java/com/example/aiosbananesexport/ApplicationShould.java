@@ -45,9 +45,6 @@ class ApplicationShould {
     @SpyBean
     private OrderFactory orderFactory;
 
-    @SpyBean
-    private ApplicationRestController applicationRestController;
-
     @Autowired
     private InMemoryOrderRepository orderRepository;
 
@@ -60,7 +57,7 @@ class ApplicationShould {
     void setUp() {
         requestDto = new PlaceOrderRequestDto(firstName, lastName, address, postalCode, city, country, deliveryDateString, quantityKg);
         doReturn(fixedId).when(orderFactory).generateId();
-        order = new Order(fixedId, firstName, lastName, address, postalCode, city, country, deliveryDate, quantityKg, 62.5);
+        order = new Order(fixedId, firstName, lastName, address, postalCode, city, country, deliveryDate, quantityKg, 25,0, 10_000, 62.5);
 
         TimestampGenerator.useFixedClockAt(fixedTimestamp);
         IdGenerator.useFixedId(fixedId);

@@ -1,0 +1,5 @@
+order:
+  price-per-kg-euro: 2.5
+  min-quantity-kg: 0
+  max-quantity-kg: 10000
+  increment-quantity-kg: 25
