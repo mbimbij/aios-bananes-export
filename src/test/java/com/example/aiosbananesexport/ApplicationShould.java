@@ -80,12 +80,10 @@ class ApplicationShould {
     @Test
     void return_an_error__when_delivery_date_too_early() {
         // GIVEN
-        LocalDate earlyDeliveryDate = LocalDate.now().plusWeeks(1).minusDays(1);
-        String earlyDeliveryDateString = earlyDeliveryDate.format(DateTimeFormat.DATE_FORMATTER);
-
-        PlaceOrderRequestDto requestDto = new PlaceOrderRequestDto("firstName", "lastName", "address", 75019, "paris", "france", earlyDeliveryDateString, 25);
-        Order expectedOrderInError = happyCaseOrder().withDeliveryDate(earlyDeliveryDate);
-        OrderDeliveryTooEarlyException exception = new OrderDeliveryTooEarlyException(expectedOrderInError);
+        DeliveryDate deliveryDateTooEarly = happyCaseDeliveryDate().withDeliveryDate(deliveryDate1DayTooEarly());
+        PlaceOrderRequestDto requestDto = happyCaseOrderRequestDto().withDeliveryDate(deliveryDateTooEarly.formatDeliveryDate(DateTimeFormat.DATE_FORMATTER));
+        Order expectedOrderInError = happyCaseOrder().withDeliveryDate(deliveryDateTooEarly);
+        OrderDeliveryTooEarlyException exception = new OrderDeliveryTooEarlyException(deliveryDateTooEarly);
         BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(exception.getMessage(), exception, fixedTimestamp);
         OrderFailedDeliveryDateTooEarlyEvent expectedEvent = new OrderFailedDeliveryDateTooEarlyEvent(fixedId, fixedTimestamp, expectedOrderInError);
 
@@ -103,6 +101,11 @@ class ApplicationShould {
                 .filteredOn(event -> event instanceof OrderFailedDeliveryDateTooEarlyEvent)
                 .hasSize(1)
                 .allSatisfy(domainEvent -> assertThat(domainEvent).usingRecursiveComparison().isEqualTo(expectedEvent));
+    }
+
+    private LocalDate deliveryDate1DayTooEarly() {
+        int oneDayBeforeMinDeliveryDate = orderConfigurationProperties.getDeliveryMinDelayDays() - 1;
+        return orderPlacementDate().plusDays(oneDayBeforeMinDeliveryDate);
     }
 
     @ParameterizedTest
@@ -151,7 +154,7 @@ class ApplicationShould {
                                          75019,
                                          "paris",
                                          "france",
-                                         LocalDate.now().plusWeeks(1).format(DateTimeFormat.DATE_FORMATTER),
+                                         orderPlacementDate().plusWeeks(1).format(DateTimeFormat.DATE_FORMATTER),
                                          25,
                                          "62.50");
     }
@@ -163,13 +166,14 @@ class ApplicationShould {
                                         75019,
                                         "paris",
                                         "france",
-                                        LocalDate.now().plusWeeks(1).format(DateTimeFormat.DATE_FORMATTER),
+                                        orderPlacementDate().plusWeeks(1).format(DateTimeFormat.DATE_FORMATTER),
                                         25);
     }
 
     private Order happyCaseOrder() {
         PriceEuro expectedPrice = new PriceEuro(62.5);
         OrderQuantity orderQuantity = happyCaseOrderQuantity();
+        DeliveryDate deliveryDate = happyCaseDeliveryDate();
         return new Order(fixedId,
                          "firstName",
                          "lastName",
@@ -177,10 +181,21 @@ class ApplicationShould {
                          75019,
                          "paris",
                          "france",
-                         LocalDate.now().plusWeeks(1),
-                         orderConfigurationProperties.getDeliveryMinDelayDays(),
+                         deliveryDate,
                          orderQuantity,
                          expectedPrice);
+    }
+
+    private DeliveryDate happyCaseDeliveryDate() {
+        LocalDate orderPlacementDate = orderPlacementDate();
+        LocalDate requestedDeliveryDate = orderPlacementDate.plusDays(orderConfigurationProperties.getDeliveryMinDelayDays());
+        return new DeliveryDate(orderPlacementDate,
+                                requestedDeliveryDate,
+                                orderConfigurationProperties.getDeliveryMinDelayDays());
+    }
+
+    private static LocalDate orderPlacementDate() {
+        return LocalDate.now();
     }
 
     private OrderQuantity happyCaseOrderQuantity() {

@@ -2,6 +2,8 @@ package com.example.aiosbananesexport.domain;
 
 import com.example.aiosbananesexport.utils.IdGenerator;
 
+import java.time.LocalDate;
+
 public class OrderFactory {
 
     private final double pricePerKgEuro;
@@ -26,8 +28,8 @@ public class OrderFactory {
                          placeOrderCommand.getPostalCode(),
                          placeOrderCommand.getCity(),
                          placeOrderCommand.getCountry(),
-                         placeOrderCommand.getDeliveryDate(),
-                         deliveryMinDelayDays,
+                         new DeliveryDate(LocalDate.now(), placeOrderCommand.getDeliveryDate(),
+                                          deliveryMinDelayDays),
                          new OrderQuantity(placeOrderCommand.getQuantityKg(),
                                            orderIncrementQuantityKg,
                                            orderMinQuantityKg,

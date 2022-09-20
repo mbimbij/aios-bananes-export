@@ -2,8 +2,6 @@ package com.example.aiosbananesexport.domain;
 
 import lombok.*;
 
-import java.time.LocalDate;
-
 @AllArgsConstructor
 @EqualsAndHashCode
 @Getter
@@ -17,21 +15,12 @@ public class Order {
     int postalCode;
     String city;
     String country;
-    LocalDate deliveryDate;
-    int deliveryMinDelayDays;
+    DeliveryDate deliveryDate;
     OrderQuantity orderQuantity;
     PriceEuro priceEuro;
 
     public void validate() throws OrderDeliveryTooEarlyException, OrderQuantityNotInRangeException, OrderQuantityNotMultipleOfIncrementException {
-        if (deliveryDateTooEarly()) {
-            throw new OrderDeliveryTooEarlyException(this);
-        }
+        deliveryDate.validate();
         orderQuantity.validate();
     }
-
-    private boolean deliveryDateTooEarly() {
-        return deliveryDate.isBefore(LocalDate.now().plusDays(deliveryMinDelayDays));
-    }
-
-
 }
