@@ -27,7 +27,7 @@ public class PlaceOrderResponseDto {
              order.getCity(),
              order.getCountry(),
              order.getDeliveryDate().format(DateTimeFormat.DATE_FORMATTER),
-             order.getQuantityKg(),
+             order.getOrderQuantity().quantityKg(),
              String.format("%.2f", order.getPriceEuro().getValue()));
     }
 }

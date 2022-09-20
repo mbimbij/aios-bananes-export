@@ -110,8 +110,8 @@ class ApplicationShould {
     void return_an_error__when_quantity_not_in_allowed_range(int wrongQuantityKg) {
         // GIVEN
         PlaceOrderRequestDto requestDto = happyCaseOrderRequestDto().withQuantityKg(wrongQuantityKg);
-        Order expectedOrderInError = happyCaseOrder().withQuantityKg(wrongQuantityKg);
-        OrderQuantityNotInRangeException expectedException = new OrderQuantityNotInRangeException(expectedOrderInError);
+        OrderQuantity wrongOrderQuantity = happyCaseOrderQuantity().withQuantityKg(wrongQuantityKg);
+        OrderQuantityNotInRangeException expectedException = new OrderQuantityNotInRangeException(wrongOrderQuantity);
         BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(expectedException.getMessage(), expectedException, fixedTimestamp);
 
         // WHEN performing the REST request
@@ -129,8 +129,8 @@ class ApplicationShould {
         // GIVEN
         int wrongQuantityKg = 30;
         PlaceOrderRequestDto requestDto = happyCaseOrderRequestDto().withQuantityKg(wrongQuantityKg);
-        Order expectedOrderInError = happyCaseOrder().withQuantityKg(wrongQuantityKg);
-        OrderQuantityNotMultipleOfIncrementException expectedException = new OrderQuantityNotMultipleOfIncrementException(expectedOrderInError);
+        OrderQuantity wrongOrderQuantity = happyCaseOrderQuantity().withQuantityKg(wrongQuantityKg);
+        OrderQuantityNotMultipleOfIncrementException expectedException = new OrderQuantityNotMultipleOfIncrementException(wrongOrderQuantity);
         BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(expectedException.getMessage(), expectedException, fixedTimestamp);
 
         // WHEN performing the REST request
@@ -169,6 +169,7 @@ class ApplicationShould {
 
     private Order happyCaseOrder() {
         PriceEuro expectedPrice = new PriceEuro(62.5);
+        OrderQuantity orderQuantity = happyCaseOrderQuantity();
         return new Order(fixedId,
                          "firstName",
                          "lastName",
@@ -178,10 +179,14 @@ class ApplicationShould {
                          "france",
                          LocalDate.now().plusWeeks(1),
                          orderConfigurationProperties.getDeliveryMinDelayDays(),
-                         25,
-                         orderConfigurationProperties.getIncrementQuantityKg(),
-                         orderConfigurationProperties.getMinQuantityKg(),
-                         orderConfigurationProperties.getMaxQuantityKg(),
+                         orderQuantity,
                          expectedPrice);
+    }
+
+    private OrderQuantity happyCaseOrderQuantity() {
+        return new OrderQuantity(25,
+                                 orderConfigurationProperties.getIncrementQuantityKg(),
+                                 orderConfigurationProperties.getMinQuantityKg(),
+                                 orderConfigurationProperties.getMaxQuantityKg());
     }
 }

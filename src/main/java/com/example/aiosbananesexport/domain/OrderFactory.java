@@ -28,10 +28,11 @@ public class OrderFactory {
                          placeOrderCommand.getCountry(),
                          placeOrderCommand.getDeliveryDate(),
                          deliveryMinDelayDays,
-                         placeOrderCommand.getQuantityKg(),
-                         orderIncrementQuantityKg,
-                         orderMinQuantityKg,
-                         orderMaxQuantityKg,
-                         new PriceEuro(pricePerKgEuro, placeOrderCommand.getQuantityKg()));
+                         new OrderQuantity(placeOrderCommand.getQuantityKg(),
+                                           orderIncrementQuantityKg,
+                                           orderMinQuantityKg,
+                                           orderMaxQuantityKg),
+                         new PriceEuro(pricePerKgEuro, placeOrderCommand.getQuantityKg())
+        );
     }
 }

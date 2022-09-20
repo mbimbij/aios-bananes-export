@@ -19,30 +19,14 @@ public class Order {
     String country;
     LocalDate deliveryDate;
     int deliveryMinDelayDays;
-    int quantityKg;
-    private final int orderIncrementQuantityKg;
-    private final int orderMinQuantityKg;
-    private final int orderMaxQuantityKg;
+    OrderQuantity orderQuantity;
     PriceEuro priceEuro;
 
     public void validate() throws OrderDeliveryTooEarlyException, OrderQuantityNotInRangeException, OrderQuantityNotMultipleOfIncrementException {
         if (deliveryDateTooEarly()) {
             throw new OrderDeliveryTooEarlyException(this);
         }
-        if (!quantityInAllowedRange()) {
-            throw new OrderQuantityNotInRangeException(this);
-        }
-        if (!quantityMultipleOfAllowedIncrement()) {
-            throw new OrderQuantityNotMultipleOfIncrementException(this);
-        }
-    }
-
-    private boolean quantityMultipleOfAllowedIncrement() {
-        return quantityKg % orderIncrementQuantityKg==0;
-    }
-
-    private boolean quantityInAllowedRange() {
-        return quantityKg > orderMinQuantityKg && quantityKg <= orderMaxQuantityKg;
+        orderQuantity.validate();
     }
 
     private boolean deliveryDateTooEarly() {

@@ -1,7 +1,7 @@
 package com.example.aiosbananesexport.domain;
 
 public class OrderQuantityNotInRangeException extends BusinessException {
-    public OrderQuantityNotInRangeException(Order order) {
-        super("quantity not in range: %d".formatted(order.quantityKg));
+    public OrderQuantityNotInRangeException(OrderQuantity orderQuantity) {
+        super("quantity not in range: %d".formatted(orderQuantity.quantityKg()));
     }
 }
