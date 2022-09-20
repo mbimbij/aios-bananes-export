@@ -12,12 +12,16 @@ import java.time.ZonedDateTime;
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @ToString
 @EqualsAndHashCode(callSuper = true)
-public class OrderCreatedEvent extends DomainEvent {
-    public OrderCreatedEvent(Order order) {
-        super(order);
+public class OrderPlacedEvent extends DomainEvent {
+    private final Order order;
+
+    public OrderPlacedEvent(Order order) {
+        super(order.getId());
+        this.order = order;
     }
 
-    public OrderCreatedEvent(String id, ZonedDateTime eventDateTime, Order order) {
-        super(id, eventDateTime, order);
+    public OrderPlacedEvent(String id, ZonedDateTime eventDateTime, Order order) {
+        super(id, order.getId(), eventDateTime);
+        this.order = order;
     }
 }

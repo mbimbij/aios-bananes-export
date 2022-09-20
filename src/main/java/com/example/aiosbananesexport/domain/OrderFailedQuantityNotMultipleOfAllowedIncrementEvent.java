@@ -12,15 +12,15 @@ import java.time.ZonedDateTime;
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @ToString
 @EqualsAndHashCode(callSuper = true)
-public class OrderFailedQuantityNotInRangeEvent extends DomainEvent {
+public class OrderFailedQuantityNotMultipleOfAllowedIncrementEvent extends DomainEvent {
     private final OrderQuantity orderQuantity;
 
-    public OrderFailedQuantityNotInRangeEvent(String orderId, OrderQuantity orderQuantity) {
+    public OrderFailedQuantityNotMultipleOfAllowedIncrementEvent(String orderId, OrderQuantity orderQuantity) {
         super(orderId);
         this.orderQuantity = orderQuantity;
     }
 
-    public OrderFailedQuantityNotInRangeEvent(String id, String orderId, ZonedDateTime eventDateTime, OrderQuantity orderQuantity) {
+    public OrderFailedQuantityNotMultipleOfAllowedIncrementEvent(String id, String orderId, ZonedDateTime eventDateTime, OrderQuantity orderQuantity) {
         super(id, orderId, eventDateTime);
         this.orderQuantity = orderQuantity;
     }

@@ -21,7 +21,10 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
+import static org.assertj.core.api.InstanceOfAssertFactories.type;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -58,7 +61,7 @@ class ApplicationShould {
         PlaceOrderRequestDto requestDto = happyCaseOrderRequestDto();
         PlaceOrderResponseDto expectedResponseDto = happyCaseOrderResponseDto();
         Order expectedOrder = happyCaseOrder();
-        OrderCreatedEvent expectedEvent = new OrderCreatedEvent(fixedId, fixedTimestamp, expectedOrder);
+        OrderPlacedEvent expectedEvent = new OrderPlacedEvent(fixedId, fixedTimestamp, expectedOrder);
 
         // WHEN performing the REST request
         WebTestClient.ResponseSpec responseSpec = webTestClient.post().uri("/order").bodyValue(requestDto).exchange();
@@ -73,8 +76,10 @@ class ApplicationShould {
         assertThat(orderRepository.getOrders()).anySatisfy(order -> assertThat(order).usingRecursiveComparison().isEqualTo(expectedOrder));
 
         // AND an "OrderCreatedEvent" is published
-        List<DomainEvent> domainEvents = domainEventPublisher.getDomainEvents();
-        assertThat(domainEvents).anySatisfy(domainEvent -> assertThat(domainEvent).usingRecursiveComparison().isEqualTo(expectedEvent));
+        assertThat(domainEventPublisher.getDomainEvents())
+                .as("event publication")
+                .singleElement(type(OrderPlacedEvent.class))
+                .satisfies(domainEvent -> assertThat(domainEvent).usingRecursiveComparison().isEqualTo(expectedEvent));
     }
 
     @Test
@@ -82,10 +87,9 @@ class ApplicationShould {
         // GIVEN
         DeliveryDate deliveryDateTooEarly = happyCaseDeliveryDate().withDeliveryDate(deliveryDate1DayTooEarly());
         PlaceOrderRequestDto requestDto = happyCaseOrderRequestDto().withDeliveryDate(deliveryDateTooEarly.formatDeliveryDate(DateTimeFormat.DATE_FORMATTER));
-        Order expectedOrderInError = happyCaseOrder().withDeliveryDate(deliveryDateTooEarly);
         OrderDeliveryTooEarlyException exception = new OrderDeliveryTooEarlyException(deliveryDateTooEarly);
         BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(exception.getMessage(), exception, fixedTimestamp);
-        OrderFailedDeliveryDateTooEarlyEvent expectedEvent = new OrderFailedDeliveryDateTooEarlyEvent(fixedId, fixedTimestamp, expectedOrderInError);
+        OrderFailedDeliveryDateTooEarlyEvent expectedEvent = new OrderFailedDeliveryDateTooEarlyEvent(fixedId, fixedId, fixedTimestamp);
 
         // WHEN performing the REST request
         WebTestClient.ResponseSpec responseSpec = webTestClient.post().uri("/order").bodyValue(requestDto).exchange();
@@ -98,14 +102,9 @@ class ApplicationShould {
 
         // AND an error event is published
         assertThat(domainEventPublisher.getDomainEvents())
-                .filteredOn(event -> event instanceof OrderFailedDeliveryDateTooEarlyEvent)
-                .hasSize(1)
-                .allSatisfy(domainEvent -> assertThat(domainEvent).usingRecursiveComparison().isEqualTo(expectedEvent));
-    }
-
-    private LocalDate deliveryDate1DayTooEarly() {
-        int oneDayBeforeMinDeliveryDate = orderConfigurationProperties.getDeliveryMinDelayDays() - 1;
-        return orderPlacementDate().plusDays(oneDayBeforeMinDeliveryDate);
+                .as("event publication")
+                .singleElement(type(OrderFailedDeliveryDateTooEarlyEvent.class))
+                .satisfies(domainEvent -> assertThat(domainEvent).usingRecursiveComparison().isEqualTo(expectedEvent));
     }
 
     @ParameterizedTest
@@ -116,6 +115,10 @@ class ApplicationShould {
         OrderQuantity wrongOrderQuantity = happyCaseOrderQuantity().withQuantityKg(wrongQuantityKg);
         OrderQuantityNotInRangeException expectedException = new OrderQuantityNotInRangeException(wrongOrderQuantity);
         BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(expectedException.getMessage(), expectedException, fixedTimestamp);
+        OrderFailedQuantityNotInRangeEvent expectedEvent = new OrderFailedQuantityNotInRangeEvent(fixedId,
+                                                                                                  fixedId,
+                                                                                                  fixedTimestamp,
+                                                                                                  wrongOrderQuantity);
 
         // WHEN performing the REST request
         WebTestClient.ResponseSpec responseSpec = webTestClient.post().uri("/order").bodyValue(requestDto).exchange();
@@ -125,6 +128,12 @@ class ApplicationShould {
                     .isEqualTo(409)
                     .expectBody(BusinessErrorDto.class)
                     .value(actualResponseDto -> assertThat(actualResponseDto).usingRecursiveComparison().isEqualTo(BusinessErrorDto));
+
+        // AND an error event is published
+        assertThat(domainEventPublisher.getDomainEvents())
+                .as("event publication")
+                .singleElement(type(OrderFailedQuantityNotInRangeEvent.class))
+                .satisfies(domainEvent -> assertThat(domainEvent).usingRecursiveComparison().isEqualTo(expectedEvent));
     }
 
     @Test
@@ -135,6 +144,10 @@ class ApplicationShould {
         OrderQuantity wrongOrderQuantity = happyCaseOrderQuantity().withQuantityKg(wrongQuantityKg);
         OrderQuantityNotMultipleOfIncrementException expectedException = new OrderQuantityNotMultipleOfIncrementException(wrongOrderQuantity);
         BusinessErrorDto BusinessErrorDto = new BusinessErrorDto(expectedException.getMessage(), expectedException, fixedTimestamp);
+        OrderFailedQuantityNotMultipleOfAllowedIncrementEvent expectedEvent = new OrderFailedQuantityNotMultipleOfAllowedIncrementEvent(fixedId,
+                                                                                                                                        fixedId,
+                                                                                                                                        fixedTimestamp,
+                                                                                                                                        wrongOrderQuantity);
 
         // WHEN performing the REST request
         WebTestClient.ResponseSpec responseSpec = webTestClient.post().uri("/order").bodyValue(requestDto).exchange();
@@ -144,6 +157,17 @@ class ApplicationShould {
                     .isEqualTo(409)
                     .expectBody(BusinessErrorDto.class)
                     .value(actualResponseDto -> assertThat(actualResponseDto).usingRecursiveComparison().isEqualTo(BusinessErrorDto));
+
+        // AND an error event is published
+        assertThat(domainEventPublisher.getDomainEvents())
+                .as("error event publication")
+                .singleElement(type(OrderFailedQuantityNotMultipleOfAllowedIncrementEvent.class))
+                .satisfies(domainEvent -> assertThat(domainEvent).usingRecursiveComparison().isEqualTo(expectedEvent));
+    }
+
+    private LocalDate deliveryDate1DayTooEarly() {
+        int oneDayBeforeMinDeliveryDate = orderConfigurationProperties.getDeliveryMinDelayDays() - 1;
+        return orderPlacementDate().plusDays(oneDayBeforeMinDeliveryDate);
     }
 
     private PlaceOrderResponseDto happyCaseOrderResponseDto() {

@@ -1,9 +1,11 @@
 package com.example.aiosbananesexport.domain;
 
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @AllArgsConstructor
 @EqualsAndHashCode
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 @ToString
 @With

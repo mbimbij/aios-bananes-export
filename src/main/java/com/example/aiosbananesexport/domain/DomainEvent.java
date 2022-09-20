@@ -13,13 +13,13 @@ import java.time.ZonedDateTime;
 @AllArgsConstructor
 @EqualsAndHashCode
 public abstract class DomainEvent {
-    private final String id;
+    private final String eventId;
+    private final String orderId;
     private final ZonedDateTime eventDateTime;
-    private final Order order;
 
-    protected DomainEvent(Order order) {
-        this.id = IdGenerator.newId();
+    protected DomainEvent(String orderId) {
+        this.orderId = orderId;
+        this.eventId = IdGenerator.newId();
         this.eventDateTime = TimestampGenerator.now();
-        this.order = order;
     }
 }

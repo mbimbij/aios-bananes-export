@@ -1,6 +1,5 @@
 package com.example.aiosbananesexport.domain;
 
-import com.example.aiosbananesexport.infra.in.PlaceOrderRequestDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,25 +18,25 @@ public class PlaceOrder {
         try {
             order.validate();
         } catch (OrderDeliveryTooEarlyException e) {
-            OrderFailedDeliveryDateTooEarlyEvent deliveryDateTooEarlyEvent = new OrderFailedDeliveryDateTooEarlyEvent(order);
-            domainEventPublisher.send(deliveryDateTooEarlyEvent);
+            OrderFailedDeliveryDateTooEarlyEvent errorEvent = new OrderFailedDeliveryDateTooEarlyEvent(order.getId());
+            domainEventPublisher.send(errorEvent);
             log.error(e.getMessage(), e);
             throw e;
         } catch (OrderQuantityNotInRangeException e) {
-            OrderFailedQuantityNotInRangeEvent deliveryDateTooEarlyEvent = new OrderFailedQuantityNotInRangeEvent(order);
-            domainEventPublisher.send(deliveryDateTooEarlyEvent);
+            OrderFailedQuantityNotInRangeEvent errorEvent = new OrderFailedQuantityNotInRangeEvent(order.getId(), order.getOrderQuantity());
+            domainEventPublisher.send(errorEvent);
             log.error(e.getMessage(), e);
             throw e;
         } catch (OrderQuantityNotMultipleOfIncrementException e) {
-            OrderFailedQuantityNotInRangeEvent deliveryDateTooEarlyEvent = new OrderFailedQuantityNotInRangeEvent(order);
-            domainEventPublisher.send(deliveryDateTooEarlyEvent);
+            OrderFailedQuantityNotMultipleOfAllowedIncrementEvent errorEvent = new OrderFailedQuantityNotMultipleOfAllowedIncrementEvent(order.getId(), order.getOrderQuantity());
+            domainEventPublisher.send(errorEvent);
             log.error(e.getMessage(), e);
             throw e;
         }
 
         orderRepository.save(order);
-        OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent(order);
-        domainEventPublisher.send(orderCreatedEvent);
+        OrderPlacedEvent orderPlacedEvent = new OrderPlacedEvent(order);
+        domainEventPublisher.send(orderPlacedEvent);
         log.info("request {} handled successfully", command);
         return order;
     }

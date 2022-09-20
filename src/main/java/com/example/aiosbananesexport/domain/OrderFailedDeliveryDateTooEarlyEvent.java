@@ -13,11 +13,11 @@ import java.time.ZonedDateTime;
 @ToString
 @EqualsAndHashCode(callSuper = true)
 public class OrderFailedDeliveryDateTooEarlyEvent extends DomainEvent {
-    public OrderFailedDeliveryDateTooEarlyEvent(Order order) {
-        super(order);
+    public OrderFailedDeliveryDateTooEarlyEvent(String orderId) {
+        super(orderId);
     }
 
-    public OrderFailedDeliveryDateTooEarlyEvent(String id, ZonedDateTime eventDateTime, Order order) {
-        super(id, eventDateTime, order);
+    public OrderFailedDeliveryDateTooEarlyEvent(String id, String orderId, ZonedDateTime eventDateTime) {
+        super(id, orderId, eventDateTime);
     }
 }
