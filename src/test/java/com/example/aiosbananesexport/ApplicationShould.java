@@ -1,7 +1,10 @@
 package com.example.aiosbananesexport;
 
 import com.example.aiosbananesexport.domain.*;
-import com.example.aiosbananesexport.infra.in.*;
+import com.example.aiosbananesexport.infra.in.BusinessErrorDto;
+import com.example.aiosbananesexport.infra.in.DateTimeFormat;
+import com.example.aiosbananesexport.infra.in.PlaceOrderRequestDto;
+import com.example.aiosbananesexport.infra.in.PlaceOrderResponseDto;
 import com.example.aiosbananesexport.infra.out.InMemoryOrderRepository;
 import com.example.aiosbananesexport.infra.out.MockDomainEventPublisher;
 import com.example.aiosbananesexport.utils.IdGenerator;
@@ -19,7 +22,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -166,7 +168,7 @@ class ApplicationShould {
     }
 
     private Order happyCaseOrder() {
-        double expectedPrice = 62.5;
+        PriceEuro expectedPrice = new PriceEuro(62.5);
         return new Order(fixedId,
                          "firstName",
                          "lastName",

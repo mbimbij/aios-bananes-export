@@ -23,7 +23,7 @@ public class Order {
     private final int orderIncrementQuantityKg;
     private final int orderMinQuantityKg;
     private final int orderMaxQuantityKg;
-    double price;
+    PriceEuro priceEuro;
 
     public void validate() throws OrderDeliveryTooEarlyException, OrderQuantityNotInRangeException, OrderQuantityNotMultipleOfIncrementException {
         if (deliveryDateTooEarly()) {

@@ -4,14 +4,14 @@ import com.example.aiosbananesexport.utils.IdGenerator;
 
 public class OrderFactory {
 
-    private final double pricePerKg;
+    private final double pricePerKgEuro;
     private final int orderIncrementQuantityKg;
     private final int orderMinQuantityKg;
     private final int orderMaxQuantityKg;
     private final int deliveryMinDelayDays;
 
-    public OrderFactory(double pricePerKg, int orderMinQuantityKg, int orderMaxQuantityKg, int orderIncrementQuantityKg, int deliveryMinDelayDays) {
-        this.pricePerKg = pricePerKg;
+    public OrderFactory(double pricePerKgEuro, int orderMinQuantityKg, int orderMaxQuantityKg, int orderIncrementQuantityKg, int deliveryMinDelayDays) {
+        this.pricePerKgEuro = pricePerKgEuro;
         this.orderMinQuantityKg = orderMinQuantityKg;
         this.orderMaxQuantityKg = orderMaxQuantityKg;
         this.orderIncrementQuantityKg = orderIncrementQuantityKg;
@@ -32,6 +32,6 @@ public class OrderFactory {
                          orderIncrementQuantityKg,
                          orderMinQuantityKg,
                          orderMaxQuantityKg,
-                         pricePerKg * placeOrderCommand.getQuantityKg());
+                         new PriceEuro(pricePerKgEuro, placeOrderCommand.getQuantityKg()));
     }
 }
